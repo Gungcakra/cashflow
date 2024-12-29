@@ -1,14 +1,14 @@
 <?php
 session_start();
-require_once "../../../library/konfigurasi.php";
+require_once "../../../../library/konfigurasi.php";
 checkUserSession($db);
 
-$idUser = $_GET['data'] ?? '';
-if ($idUser) {
-    $data = query("SELECT * FROM user WHERE userId = ?", [$idUser])[0];
-    $flagUser = 'update';
+$idBank = $_GET['data'] ?? '';
+if ($idBank) {
+    $data = query("SELECT * FROM bank WHERE idBank = ?", [$idBank])[0];
+    $flagBank = 'update';
 } else {
-    $flagUser = 'add';
+    $flagBank = 'add';
 }
 ?>
 
@@ -54,22 +54,23 @@ if ($idUser) {
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12 bg-white p-2">
-                        <form id="formUserInput">
+                        <form id="formBankInput">
                             <div class="form-row">
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="username">Username</label>
-                                    <input type="hidden" name="flagUser" id="flagUser" value="<?= $flagUser ?>">
-                                    <input type="hidden" name="idUser" id="idUser" value="<?= $idUser ?>">
-                                    <input type="text" class="form-control" id="username" name="username" value="<?= $data['username'] ?? '' ?>" autocomplete="off" placeholder="Username">
+                                    <label for="bankname">Bank Name</label>
+                                    <input type="hidden" name="flagBank" id="flagBank" value="<?= $flagBank ?>">
+                                    <input type="hidden" name="idBank" id="idBank" value="<?= $idBank ?>">
+                                    <input type="text" class="form-control" id="nama" name="nama" value="<?= $data['nama'] ?? '' ?>" autocomplete="off" placeholder="Bank Name">
                                 </div>
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="username">Password</label>
-                                    <input type="text" class="form-control" id="password" name="password" autocomplete="off" placeholder="Password">
+                                    <label for="bankname">Balance</label>
+                                    <input type="number" class="form-control" id="saldo" name="saldo" autocomplete="off" placeholder="Bank Balance" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['saldo'] ?? '' ?>">
+                                    
                                 </div>
                             </div>
                         </form>
 
-                        <button type="button" class="btn btn-<?= $flagUser === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesUser()"><i class="ri-save-3-line"></i>Simpan</button>
+                        <button type="button" class="btn btn-<?= $flagBank === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesBank()"><i class="ri-save-3-line"></i>Simpan</button>
                     </div>
                 </div>
             </div>
@@ -102,7 +103,7 @@ if ($idUser) {
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
 
     <!-- MAIN JS -->
-    <script src="<?= BASE_URL_HTML ?>/system/user/user.js"></script>
+    <script src="<?= BASE_URL_HTML ?>/system/data/bank/bank.js"></script>
 
         <!-- Toastr JS -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>

@@ -19,15 +19,24 @@
                 [
                     'title' => 'User',
                     'icon' => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
-                    'url' => BASE_URL_HTML . '/system/user/',
-                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/user/'
+                    'url' => BASE_URL_HTML . '/system/data/user/',
+                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/data/user/'
+                ],
+                [
+                    'title' => 'Bank',
+                    'icon' => '<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                               <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M3 21h18M4 18h16M6 10v8m4-8v8m4-8v8m4-8v8M4 9.5v-.955a1 1 0 0 1 .458-.84l7-4.52a1 1 0 0 1 1.084 0l7 4.52a1 1 0 0 1 .458.84V9.5a.5.5 0 0 1-.5.5h-15a.5.5 0 0 1-.5-.5Z"/>
+                                </svg>
+',
+                    'url' => BASE_URL_HTML . '/system/data/bank/',
+                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/data/bank/'
                 ],
                 [
                     'title' => 'Cash Flow',
                     'icon' => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>',
-                    'url' => BASE_URL_HTML . '/system/cashflow',
-                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/cashflow'
-                ]
+                    'url' => BASE_URL_HTML . '/system/data/cashflow/',
+                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/data/cashflow/'
+                ],
             ]
         ]
     ];

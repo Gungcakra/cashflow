@@ -23565,3 +23565,12 @@ ul.iq-contact-rest li a p {
 
 .data-table .badge {
   padding: 8px 10px; }
+
+  input[type=number]::-webkit-outer-spin-button,
+                                        input[type=number]::-webkit-inner-spin-button {
+                                            -webkit-appearance: none;
+                                            margin: 0;
+                                        }
+                                        input[type=number] {
+                                            -moz-appearance: textfield;
+                                        }
