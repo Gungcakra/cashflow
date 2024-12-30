@@ -39,7 +39,7 @@ $query = "SELECT cashflow.*,
           bank.nama as bank
           FROM cashflow 
           INNER JOIN bank 
-          ON cashflow.idBank = bank.idBank " . $conditions . " LIMIT ? OFFSET ?";
+          ON cashflow.idBank = bank.idBank " . $conditions . " ORDER BY cashflow.tanggal ASC LIMIT ? OFFSET ?";
 
 
 $params[] = $limit;

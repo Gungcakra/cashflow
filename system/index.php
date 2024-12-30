@@ -11,18 +11,11 @@ $thisMonthRevenue = query("SELECT (SUM(CASE WHEN jenis = 'kredit' THEN nominal E
 
 $lastMonthRevenue = query("SELECT (SUM(CASE WHEN jenis = 'kredit' THEN nominal ELSE 0 END) - SUM(CASE WHEN jenis = 'debet' THEN nominal ELSE 0 END)) as totalRevenue FROM cashflow WHERE MONTH(tanggal) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)")[0];
 
-$thisMonthTotalBalance = $thisMonthBalance['totalBalance'] + $thisMonthRevenue['totalRevenue'];
+$thisMonthLoss = query("SELECT SUM(CASE WHEN jenis = 'debet' THEN nominal ELSE 0 END) as totalLoss FROM cashflow WHERE MONTH(tanggal) = MONTH(CURRENT_DATE())")[0];
 
-$lastMonthBalance = $thisMonthBalance['totalBalance'] - $thisMonthRevenue['totalRevenue'] + $lastMonthRevenue['totalRevenue'];
+$lastMonthLoss = query("SELECT SUM(CASE WHEN jenis = 'debet' THEN nominal ELSE 0 END) as totalLoss FROM cashflow WHERE MONTH(tanggal) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)")[0];
 
-$balancePercentageChange = 0;
-if ($lastMonthBalance == 0 && $thisMonthTotalBalance == 0) {
-    $balancePercentageChange = 0;
-} elseif ($lastMonthBalance == 0 && $thisMonthTotalBalance > 0) {
-    $balancePercentageChange = 100;
-} elseif ($lastMonthBalance > 0) {
-    $balancePercentageChange = (($thisMonthTotalBalance - $lastMonthBalance) / $lastMonthBalance) * 100;
-}
+$thisMonthTotalBalance = $thisMonthBalance['totalBalance'];
 
 $lastMonthTotalRevenue = $lastMonthRevenue['totalRevenue'];
 $revenuePrecentance = 0;
@@ -33,121 +26,216 @@ if ($lastMonthTotalRevenue == 0 && $thisMonthRevenue['totalRevenue'] == 0) {
 } elseif ($lastMonthTotalRevenue > 0) {
     $revenuePrecentance = (($thisMonthRevenue['totalRevenue'] - $lastMonthTotalRevenue) / $lastMonthTotalRevenue) * 100;
 }
+
+$lastMonthTotalLoss = $lastMonthLoss['totalLoss'];
+$lossPrecentance = 0;
+if ($lastMonthTotalLoss == 0 && $thisMonthLoss['totalLoss'] == 0) {
+    $lossPrecentance = 0;
+} elseif ($lastMonthTotalLoss == 0 && $thisMonthLoss['totalLoss'] > 0) {
+    $lossPrecentance = 100;
+} elseif ($lastMonthTotalLoss > 0) {
+    $lossPrecentance = (($thisMonthLoss['totalLoss'] - $lastMonthTotalLoss) / $lastMonthTotalLoss) * 100;
+}
+
+
+$todayIncome = query("SELECT (SUM(CASE WHEN jenis = 'kredit' THEN nominal ELSE 0 END) - SUM(CASE WHEN jenis = 'debet' THEN nominal ELSE 0 END)) as totalIncome FROM cashflow WHERE DATE(tanggal) = CURRENT_DATE()")[0];
+
+$todayIncomeAmount = $todayIncome['totalIncome'] ?? 0; // Jika hasil query null, set ke 0
+$todayIncomeAmount = max($todayIncomeAmount, 0); // Pastikan tidak negatif
+
+$yesterdayIncome = query("SELECT (SUM(CASE WHEN jenis = 'kredit' THEN nominal ELSE 0 END) - SUM(CASE WHEN jenis = 'debet' THEN nominal ELSE 0 END)) as totalIncome FROM cashflow WHERE DATE(tanggal) = CURRENT_DATE() - INTERVAL 1 DAY")[0];
+
+$yesterdayIncomeAmount = $yesterdayIncome['totalIncome'] ?? 0; // Jika hasil query null, set ke 0
+$yesterdayIncomeAmount = max($yesterdayIncomeAmount, 0); // Pastikan tidak negatif
+
+$incomePercentage = 0;
+
+// Hitung persentase berdasarkan kondisi
+if ($yesterdayIncomeAmount == 0 && $todayIncomeAmount == 0) {
+    $incomePercentage = 0; // Jika kemarin dan hari ini 0
+} elseif ($yesterdayIncomeAmount == 0 && $todayIncomeAmount > 0) {
+    $incomePercentage = 100; // Jika kemarin 0 dan hari ini ada income
+} elseif ($yesterdayIncomeAmount > 0 && $todayIncomeAmount == 0) {
+    $incomePercentage = 0; // Jika kemarin ada income dan hari ini tidak ada
+} elseif ($yesterdayIncomeAmount > 0) {
+    // Hitung persentase pertumbuhan dengan formula standar
+    $incomePercentage = (($todayIncomeAmount - $yesterdayIncomeAmount) / $yesterdayIncomeAmount) * 100;
+}
+
+
 ?>
 
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title><?= PAGE_TITLE ?></title>
-      
-      <!-- Favicon -->
-      <link rel="shortcut icon" href="<?= BASE_URL_HTML ?>/assets/images/favicon.ico" />
-      <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/css/backend-plugin.min.css">
-      <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/css/backend.css?v=1.0.0">
-      <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css">
-      <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/remixicon/fonts/remixicon.css">
-      
-      <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/tui-calendar/tui-calendar/dist/tui-calendar.css">
-      <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/tui-calendar/tui-date-picker/dist/tui-date-picker.css">
-      <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/tui-calendar/tui-time-picker/dist/tui-time-picker.css">  </head>
-  <body class="  ">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title><?= PAGE_TITLE ?></title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="<?= BASE_URL_HTML ?>/assets/images/favicon.ico" />
+    <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/css/backend-plugin.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/css/backend.css?v=1.0.0">
+    <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/line-awesome/dist/line-awesome/css/line-awesome.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/remixicon/fonts/remixicon.css">
+
+    <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/tui-calendar/tui-calendar/dist/tui-calendar.css">
+    <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/tui-calendar/tui-date-picker/dist/tui-date-picker.css">
+    <link rel="stylesheet" href="<?= BASE_URL_HTML ?>/assets/vendor/tui-calendar/tui-time-picker/dist/tui-time-picker.css">
+</head>
+
+<body class="  ">
     <!-- loader Start -->
     <div id="loading">
-          <div id="loading-center">
-          </div>
+        <div id="loading-center">
+        </div>
     </div>
     <!-- loader END -->
     <!-- Wrapper Start -->
     <div class="wrapper">
-      
-    <!-- SIDEBAR -->
-      <?php require_once "{$constant('BASE_URL_PHP')}/system/sidebar.php"; ?>
-      
-    <!-- NAVBAR -->
-      <?php require_once "{$constant('BASE_URL_PHP')}/system/navbar.php"; ?>
 
-      <div class="content-page">
-     <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-6 col-lg-3">
-                <div class="card card-block card-stretch card-height">
-                    <div class="card-body">
-                        <div class="top-block d-flex align-items-center justify-content-between">
-                            <h5>Balance</h5>
-                            <span class="badge badge-primary">Monthly</span>
-                        </div>
-                        <h3><span class=""><?= rupiah($thisMonthTotalBalance ?? 0)?></span></h3>
-                        <div class="d-flex align-items-center justify-content-between mt-1">
-                            <p class="mb-0">Total Balance</p>
-                            <span class="text-primary"><?= bulatkanPresentase($balancePercentageChange) ?>%</span>
-                        </div>
-                        <div class="iq-progress-bar bg-primary-light mt-2">
-                            <span class="bg-primary iq-progress progress-1" data-percent="<?= bulatkanPresentase($balancePercentageChange) ?>"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card card-block card-stretch card-height">
-                    <div class="card-body">
-                        <div class="top-block d-flex align-items-center justify-content-between">
-                            <h5>Sales</h5>
-                            <span class="badge badge-warning">Anual</span>
-                        </div>
-                        <h3>$<span class="counter">25100</span></h3>
-                        <div class="d-flex align-items-center justify-content-between mt-1">
-                            <p class="mb-0">Total Revenue</p>
-                            <span class="text-warning">35%</span>
-                        </div>
-                        <div class="iq-progress-bar bg-warning-light mt-2">
-                            <span class="bg-warning iq-progress progress-1" data-percent="35"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card card-block card-stretch card-height">
-                    <div class="card-body">
-                        <div class="top-block d-flex align-items-center justify-content-between">
-                            <h5>Cost</h5>
-                            <span class="badge badge-success">Today</span>
-                        </div>
-                        <h3>$<span class="counter">33000</span></h3>
-                        <div class="d-flex align-items-center justify-content-between mt-1">
-                            <p class="mb-0">Total Revenue</p>
-                            <span class="text-success">85%</span>
-                        </div>
-                        <div class="iq-progress-bar bg-success-light mt-2">
-                            <span class="bg-success iq-progress progress-1" data-percent="85"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card card-block card-stretch card-height">
-                    <div class="card-body">
-                        <div class="top-block d-flex align-items-center justify-content-between">
-                            <h5>Profit</h5>
-                            <span class="badge badge-info">Monthly</span>
-                        </div>
-                        <h3><span class=""><?= rupiah($thisMonthRevenue['totalRevenue'] ?? 0) ?></span></h3>
-                        <div class="d-flex align-items-center justify-content-between mt-1">
-                            <p class="mb-0">Total Revenue</p>
-                            <span class="text-info"><?= $revenuePrecentance ?>%</span>
-                        </div>
-                        <div class="iq-progress-bar bg-info-light mt-2">
-                            <span class="bg-info iq-progress progress-1" data-percent="<?= $revenuePrecentance ?>"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- SIDEBAR -->
+        <?php require_once "{$constant('BASE_URL_PHP')}/system/sidebar.php"; ?>
 
+        <!-- NAVBAR -->
+        <?php require_once "{$constant('BASE_URL_PHP')}/system/navbar.php"; ?>
+
+        <div class="content-page">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <h5>Balance</h5>
+                                    <span class="badge badge-primary">All Banks</span>
+                                </div>
+                                <h3><span class=""><?= rupiah($thisMonthTotalBalance ?? 0) ?></span></h3>
+                                <div class="d-flex align-items-center justify-content-between mt-1">
+                                    <p class="mb-0">Total Balance</p>
+                                    <span class="text-primary">-</span>
+                                </div>
+                                <div class="iq-progress-bar bg-primary-light mt-2">
+                                    <span class="bg-primary iq-progress progress-1" data-percent="100"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <h5>Profit</h5>
+                                    <span class="badge badge-success">Monthly</span>
+                                </div>
+                                <h3><span class=""><?= rupiah($thisMonthRevenue['totalRevenue'] ?? 0) ?></span></h3>
+                                <div class="d-flex align-items-center justify-content-between mt-1">
+                                    <p class="mb-0">Total Profit</p>
+                                    <span class="text-success"><?= bulatkanPresentase($revenuePrecentance) ?>%</span>
+                                </div>
+                                <div class="iq-progress-bar bg-success-light mt-2">
+                                    <span class="bg-success iq-progress progress-1" data-percent="<?= min(bulatkanPresentase($revenuePrecentance), 100) ?>"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <h5>Loss</h5>
+                                    <span class="badge badge-danger">Monthly</span>
+                                </div>
+                                <h3><span class=""><?= rupiah($thisMonthLoss['totalLoss'] ?? 0) ?></span></h3>
+                                <div class="d-flex align-items-center justify-content-between mt-1">
+                                    <p class="mb-0">Total Loss</p>
+                                    <span class="text-danger"><?= bulatkanPresentase($lossPrecentance) ?>%</span>
+                                </div>
+                                <div class="iq-progress-bar bg-danger-light mt-2">
+                                    <span class="bg-danger iq-progress progress-1" data-percent="<?= min(bulatkanPresentase($lossPrecentance), 100) ?>"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body">
+                                <div class="top-block d-flex align-items-center justify-content-between">
+                                    <h5>Income</h5>
+                                    <span class="badge badge-warning">Today</span>
+                                </div>
+                                <h3><span class=""><?= rupiah($todayIncomeAmount ?? 0) ?></span></h3>
+                                <div class="d-flex align-items-center justify-content-between mt-1">
+                                    <p class="mb-0">Total Income</p>
+                                    <span class="text-warning"><?= bulatkanPresentase($incomePercentage) ?>%</span>
+                                </div>
+                                <div class="iq-progress-bar bg-warning-light mt-2">
+                                    <span class="bg-warning iq-progress progress-1" data-percent="<?= min(bulatkanPresentase($incomePercentage), 100) ?>"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- Page end  -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <canvas id="combinedChart"></canvas>
+                    </div>
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    const combinedChartCtx = document.getElementById('combinedChart').getContext('2d');
+
+                    new Chart(combinedChartCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Balance', 'Profit', 'Loss', 'Income'],
+                            datasets: [{
+                                label: 'Total Balance',
+                                data: [<?= $thisMonthTotalBalance ?>, 0, 0, 0],
+                                backgroundColor: 'rgba(54, 162, 235, 1)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }, {
+                                label: 'Total Profit',
+                                data: [0, <?= $thisMonthRevenue['totalRevenue'] ?>, 0, 0],
+                                backgroundColor: 'rgba(75, 192, 192, 1)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }, {
+                                label: 'Total Loss',
+                                data: [0, 0, <?= $thisMonthLoss['totalLoss'] ?>, 0],
+                                backgroundColor: 'rgba(255, 99, 132, 1)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }, {
+                                label: 'Total Income',
+                                data: [0, 0, 0, <?= $todayIncomeAmount ?>],
+                                backgroundColor: 'rgba(255, 206, 86, 1)',
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Financial Overview'
+                                }
+                            }
+                        }
+                    });
+                </script>
+            </div>
         </div>
-        <!-- Page end  -->
-    </div>
-      </div>
     </div>
     <!-- Wrapper End-->
 
@@ -418,21 +506,22 @@ if ($lastMonthTotalRevenue == 0 && $thisMonthRevenue['totalRevenue'] == 0) {
     <?php require_once "{$constant('BASE_URL_PHP')}/system//footer.php"; ?>
     <!-- Backend Bundle JavaScript -->
     <script src="<?= BASE_URL_HTML ?>/assets/js/backend-bundle.min.js"></script>
-    
+
     <!-- Table Treeview JavaScript -->
     <script src="<?= BASE_URL_HTML ?>/assets/js/table-treeview.js"></script>
-    
+
     <!-- Chart Custom JavaScript -->
     <script src="<?= BASE_URL_HTML ?>/assets/js/customizer.js"></script>
-    
+
     <!-- Chart Custom JavaScript -->
     <script async src="<?= BASE_URL_HTML ?>/assets/js/chart-custom.js"></script>
     <!-- Chart Custom JavaScript -->
     <script async src="<?= BASE_URL_HTML ?>/assets/js/slider.js"></script>
-    
+
     <!-- app JavaScript -->
     <script src="<?= BASE_URL_HTML ?>/assets/js/app.js"></script>
-    
+
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
-  </body>
+</body>
+
 </html>
