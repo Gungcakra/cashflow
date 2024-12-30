@@ -6,66 +6,93 @@ require_once "../../../library/konfigurasi.php";
 //CEK USER
 checkUserSession($db);
 
-// Check if the flagBank is set
-if (isset($_POST['flagBank']) && $_POST['flagBank'] === 'add') {
+// Check if the flagCashflow is set
+if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
     $nama = $_POST['nama'];
-    $saldo = $_POST['saldo'];
+    $nominal = $_POST['nominal'];
+    $jenis = $_POST['jenis'];
+    $idBank = $_POST['idBank'];
 
-    $query = "INSERT INTO bank (nama, saldo) VALUES (?, ?)";
+    $dataBank = query("SELECT * FROM bank WHERE idBank = ?", [$idBank])[0];
 
-    $result = query($query, [$nama, $saldo]);
+    if($jenis === 'kredit'){
+        $saldo = $dataBank['saldo'] + $nominal;
+    } else {
+        $saldo = $dataBank['saldo'] - $nominal;
+    }
+    
+    $query = "INSERT INTO cashflow (idBank, nama, nominal, jenis) VALUES (?, ?, ?, ?)";
+
+    $result = query($query, [$idBank, $nama, $nominal, $jenis]);
 
     if ($result > 0) {
+        $query = "UPDATE bank SET saldo = ? WHERE idBank = ?";
+        $result = query($query, [$saldo, $idBank]);
+
         echo json_encode([
             "status" => true,
-            "pesan" => "Bank added successfully!"
+            "pesan" => "Cashflow added successfully!"
         ]);
     } else {
         echo json_encode([
             "status" => false,
-            "pesan" => "Failed to add Bank."
+            "pesan" => "Failed to add Cashflow."
         ]);
     }
-} else if (isset($_POST['flagBank']) && $_POST['flagBank'] === 'delete') {
-    $idBank = $_POST['idBank'];
+} else if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'delete') {
+    $idCashflow = $_POST['idCashflow'];
+    $data = query("SELECT * FROM cashflow WHERE idCashflow = ?", [$idCashflow])[0];
+    $dataBank = query("SELECT * FROM bank WHERE idBank = ?", [$data['idBank']])[0];
 
-    $query = "DELETE FROM bank WHERE idBank = ?";
-    $result = query($query, [$idBank]);
+    $updateSaldo = $dataBank['saldo'] - $data['nominal'];
+
+    $query = "DELETE FROM cashflow WHERE idCashflow = ?";
+    $result = query($query, [$idCashflow]);
 
     if ($result > 0) {
+        $query = "UPDATE bank SET saldo = ? WHERE idBank = ?";
+        $result = query($query, [$updateSaldo, $data['idBank']]);
         echo json_encode([
             "status" => true,
-            "pesan" => "Bank deleted successfully!"
+            "pesan" => "Cashflow deleted successfully!"
         ]);
     } else {
         echo json_encode([
             "status" => false,
-            "pesan" => "Failed to delete Bank: " . mysqli_error($db)
+            "pesan" => "Failed to delete Cashflow: " . mysqli_error($db)
         ]);
     }
-} else if ($_POST['flagBank'] && $_POST['flagBank'] === 'update') {
-    $idBank = $_POST['idBank'];
+} else if ($_POST['flagCashflow'] && $_POST['flagCashflow'] === 'update') {
+    $idCashflow = $_POST['idCashflow'];
     $nama = $_POST['nama'];
-    $saldo = $_POST['saldo'];
+    $nominal = $_POST['nominal'];
+    $jenis = $_POST['jenis'];
+    $idBank = $_POST['idBank'];
 
+    $dataBank = query("SELECT * FROM bank WHERE idBank = ?", [$idBank])[0];
 
-    $query = "UPDATE bank 
-          SET nama = ?, 
-              saldo = ?
-          WHERE idBank = ?";
+    if($jenis === 'kredit'){
+        $saldo = $dataBank['saldo'] + $nominal;
+    } else {
+        $saldo = $dataBank['saldo'] - $nominal;
+    }
 
-    $result = query($query, [$nama, $saldo, $idBank]);
+    $query = "UPDATE cashflow SET idBank = ?, nama = ?, nominal = ?, jenis = ? WHERE idCashflow = ?";
+    $result = query($query, [$idBank, $nama, $nominal, $jenis, $idCashflow]);
+
 
 
     if ($result) {
+        $query = "UPDATE bank SET saldo = ? WHERE idBank = ?";
+        $result = query($query, [$saldo, $idBank]);
         echo json_encode([
             "status" => true,
-            "pesan" => "Bank updated successfully!"
+            "pesan" => "Cashflow updated successfully!"
         ]);
     } else {
         echo json_encode([
             "status" => false,
-            "pesan" => "Failed to update Bank: " . mysqli_error($db)
+            "pesan" => "Failed to update Cashflow: " . mysqli_error($db)
         ]);
     }
 }

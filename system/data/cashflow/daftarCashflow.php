@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../../../library/konfigurasi.php";
+require_once "{$constant('BASE_URL_PHP')}/library/fungsiTanggal.php";
 require_once "{$constant('BASE_URL_PHP')}/library/fungsiRupiah.php";
 
 //CEK USER
@@ -28,12 +29,14 @@ if ($flagCashflow === 'cari') {
     }
 }
 
-$totalQuery = "SELECT COUNT(*) as total FROM cashflow INNER join bank ON cashflow.idBank = bank.idBank " . $conditions;
+$totalQuery = "SELECT COUNT(*) as total FROM cashflow INNER JOIN bank ON cashflow.idBank = bank.idBank " . $conditions;
 $totalResult = query($totalQuery, $params);
 $totalRecords = $totalResult[0]['total'];
 $totalPages = ceil($totalRecords / $limit);
 
-$query = "SELECT *
+$query = "SELECT cashflow.*, 
+          bank.idBank,
+          bank.nama as bank
           FROM cashflow 
           INNER JOIN bank 
           ON cashflow.idBank = bank.idBank " . $conditions . " LIMIT ? OFFSET ?";
@@ -54,6 +57,7 @@ $cashflow = query($query, $params);
             <th>Nominal</th>
             <th>Type</th>
             <th>Bank</th>
+            <th>Date</th>
         </tr>
     </thead>
     <tbody>
@@ -77,14 +81,17 @@ $cashflow = query($query, $params);
                         <a class="dropdown-item" href="form/?data=<?= $row['idCashflow'] ?>" data-toggle="tooltip" data-placement="top" title="Edit">
                             <i class="ri-pencil-line mr-0"></i> Edit
                         </a>
-                        <a class="dropdown-item" href="#" data-toggle="tooltip" data-placement="top" title="Delete" onclick="deleteCashflow(<?= $row['idCashflow'] ?>)">
+                        <a class="dropdown-item" href="#" data-toggle="tooltip" data-placement="top" title="Delete" onclick="deleteCashflow('<?= $row['idCashflow'] ?>','<?= $row['idBank'] ?>')">
                             <i class="ri-delete-bin-line mr-0"></i> Delete
                         </a>
                     </div>
                     </div>
                 </td>
                 <td><?= $row['nama'] ?></td>
-                <td><?= rupiah($row['saldo']) ?></td>
+                <td><?= rupiah($row['nominal']) ?></td>
+                <td><a class="btn p-1 text-white btn-<?= $row['jenis'] === 'kredit' ? 'success' : 'danger' ?>"><?= $row['jenis'] ?></a></td>
+                <td><?= $row['bank'] ?></td>
+                <td><?= timestampToTanggal( $row['tanggal']) ?></td>
         </tr>
         <?php endforeach; ?>
         <?php } else{ ?>

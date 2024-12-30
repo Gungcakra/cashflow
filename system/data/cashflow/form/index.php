@@ -5,11 +5,18 @@ checkUserSession($db);
 
 $idCashflow = $_GET['data'] ?? '';
 if ($idCashflow) {
-    $data = query("SELECT * FROM cashflow WHERE idCashflow = ?", [$idCashflow])[0];
+    $data = query("SELECT cashflow.*,
+                                 bank.idBank,
+                                 bank.nama AS namaBank
+                          FROM cashflow 
+                          INNER JOIN bank 
+                          ON cashflow.idBank = bank.idBank
+                          WHERE idCashflow = ?", [$idCashflow])[0];
     $flagCashflow = 'update';
 } else {
     $flagCashflow = 'add';
 }
+$bank = query("SELECT * FROM bank", []);
 ?>
 
 <!doctype html>
@@ -63,9 +70,31 @@ if ($idCashflow) {
                                     <input type="text" class="form-control" id="nama" name="nama" value="<?= $data['nama'] ?? '' ?>" autocomplete="off" placeholder="Cashflow Name">
                                 </div>
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="cashflowname">Balance</label>
-                                    <input type="number" class="form-control" id="saldo" name="saldo" autocomplete="off" placeholder="Cashflow Balance" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['saldo'] ?? '' ?>">
-                                    
+                                    <label for="cashflowname">Nominal</label>
+                                    <input type="number" class="form-control" id="nominal" name="nominal" autocomplete="off" placeholder="Cashflow Nominal" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['nominal'] ?? '' ?>">
+
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="cashflowname">Type</label>
+                                    <select class="form-control" id="jenis" name="jenis">
+                                        <option value="">Select Type</option>
+                                        <option value="kredit" <?= isset($data['jenis']) && $data['jenis'] === 'kredit' ? 'selected' : '' ?>>Kredit</option>
+                                        <option value="debet" <?= isset($data['jenis']) && $data['jenis'] === 'debet' ? 'selected' : '' ?>>Debet</option>
+                                    </select>
+
+                                </div>
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="cashflowname">Bank</label>
+                                    <select class="form-control" id="idBank" name="idBank">
+                                        <option value="">Select Bank</option>
+                                        <?php
+                                        foreach ($bank as $row) : ?>
+                                            <option value="<?= $row['idBank'] ?>" <?= isset($data['idBank']) && $row['idBank'] === $data['idBank'] ? 'selected' : '' ?>><?= $row['nama'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+
                                 </div>
                             </div>
                         </form>
@@ -105,8 +134,8 @@ if ($idCashflow) {
     <!-- MAIN JS -->
     <script src="<?= BASE_URL_HTML ?>/system/data/cashflow/cashflow.js"></script>
 
-        <!-- Toastr JS -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </body>
 
 </html>

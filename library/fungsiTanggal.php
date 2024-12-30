@@ -58,3 +58,9 @@ function namaBulan($nomorBulan) {
 
     return isset($namaBulan[$nomorBulan]) ? $namaBulan[$nomorBulan] : '';
 }
+
+function timestampToTanggal($timestamp) {
+    $dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $timestamp);
+    return $dateTime->format('d M Y');
+}
+

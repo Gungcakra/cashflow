@@ -29,7 +29,7 @@ function daftarCashflow() {
 }
 
 
-function deleteCashflow(id) {
+function deleteCashflow(id, idBank) {
   Swal.fire({
     title: "Are You Sure?",
     text: "Once canceled, the process cannot be undone!",
@@ -44,6 +44,7 @@ function deleteCashflow(id) {
         type: "post",
         data: {
           idCashflow: id,
+          idBank: idBank,
           flagCashflow: "delete",
         },
         dataType: "json",
