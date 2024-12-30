@@ -96,7 +96,7 @@ $cashflow = query($query, $params);
         <?php endforeach; ?>
         <?php } else{ ?>
         <tr>
-            <td colspan="6" class="text-center">No data found!</td>
+            <td colspan="8" class="text-center">No data found!</td>
         </tr>
         <?php } ?>
     </tbody>

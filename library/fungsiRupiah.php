@@ -14,3 +14,7 @@ function ubahKePersen($currentValue, $totalValue) {
     
     return number_format($percentage, 2) . '%';
 }
+
+function bulatkanPresentase($value) {
+    return round($value, 2);
+}

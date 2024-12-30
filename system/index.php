@@ -5,6 +5,34 @@ require_once "{$constant('BASE_URL_PHP')}/library/fungsiRupiah.php";
 require_once "{$constant('BASE_URL_PHP')}/library/fungsiTanggal.php";
 checkUserSession($db);
 
+$thisMonthBalance = query("SELECT SUM(saldo) as totalBalance FROM bank")[0];
+
+$thisMonthRevenue = query("SELECT (SUM(CASE WHEN jenis = 'kredit' THEN nominal ELSE 0 END) - SUM(CASE WHEN jenis = 'debet' THEN nominal ELSE 0 END)) as totalRevenue FROM cashflow WHERE MONTH(tanggal) = MONTH(CURRENT_DATE())")[0];
+
+$lastMonthRevenue = query("SELECT (SUM(CASE WHEN jenis = 'kredit' THEN nominal ELSE 0 END) - SUM(CASE WHEN jenis = 'debet' THEN nominal ELSE 0 END)) as totalRevenue FROM cashflow WHERE MONTH(tanggal) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)")[0];
+
+$thisMonthTotalBalance = $thisMonthBalance['totalBalance'] + $thisMonthRevenue['totalRevenue'];
+
+$lastMonthBalance = $thisMonthBalance['totalBalance'] - $thisMonthRevenue['totalRevenue'] + $lastMonthRevenue['totalRevenue'];
+
+$balancePercentageChange = 0;
+if ($lastMonthBalance == 0 && $thisMonthTotalBalance == 0) {
+    $balancePercentageChange = 0;
+} elseif ($lastMonthBalance == 0 && $thisMonthTotalBalance > 0) {
+    $balancePercentageChange = 100;
+} elseif ($lastMonthBalance > 0) {
+    $balancePercentageChange = (($thisMonthTotalBalance - $lastMonthBalance) / $lastMonthBalance) * 100;
+}
+
+$lastMonthTotalRevenue = $lastMonthRevenue['totalRevenue'];
+$revenuePrecentance = 0;
+if ($lastMonthTotalRevenue == 0 && $thisMonthRevenue['totalRevenue'] == 0) {
+    $revenuePrecentance = 0;
+} elseif ($lastMonthTotalRevenue == 0 && $thisMonthRevenue['totalRevenue'] > 0) {
+    $revenuePrecentance = 100;
+} elseif ($lastMonthTotalRevenue > 0) {
+    $revenuePrecentance = (($thisMonthRevenue['totalRevenue'] - $lastMonthTotalRevenue) / $lastMonthTotalRevenue) * 100;
+}
 ?>
 
 <!doctype html>
@@ -47,16 +75,16 @@ checkUserSession($db);
                 <div class="card card-block card-stretch card-height">
                     <div class="card-body">
                         <div class="top-block d-flex align-items-center justify-content-between">
-                            <h5>Investment</h5>
+                            <h5>Balance</h5>
                             <span class="badge badge-primary">Monthly</span>
                         </div>
-                        <h3>$<span class="counter">35000</span></h3>
+                        <h3><span class=""><?= rupiah($thisMonthTotalBalance ?? 0)?></span></h3>
                         <div class="d-flex align-items-center justify-content-between mt-1">
-                            <p class="mb-0">Total Revenue</p>
-                            <span class="text-primary">65%</span>
+                            <p class="mb-0">Total Balance</p>
+                            <span class="text-primary"><?= bulatkanPresentase($balancePercentageChange) ?>%</span>
                         </div>
                         <div class="iq-progress-bar bg-primary-light mt-2">
-                            <span class="bg-primary iq-progress progress-1" data-percent="65"></span>
+                            <span class="bg-primary iq-progress progress-1" data-percent="<?= bulatkanPresentase($balancePercentageChange) ?>"></span>
                         </div>
                     </div>
                 </div>
@@ -102,15 +130,15 @@ checkUserSession($db);
                     <div class="card-body">
                         <div class="top-block d-flex align-items-center justify-content-between">
                             <h5>Profit</h5>
-                            <span class="badge badge-info">Weekly</span>
+                            <span class="badge badge-info">Monthly</span>
                         </div>
-                        <h3>$<span class="counter">2500</span></h3>
+                        <h3><span class=""><?= rupiah($thisMonthRevenue['totalRevenue'] ?? 0) ?></span></h3>
                         <div class="d-flex align-items-center justify-content-between mt-1">
                             <p class="mb-0">Total Revenue</p>
-                            <span class="text-info">55%</span>
+                            <span class="text-info"><?= $revenuePrecentance ?>%</span>
                         </div>
                         <div class="iq-progress-bar bg-info-light mt-2">
-                            <span class="bg-info iq-progress progress-1" data-percent="55"></span>
+                            <span class="bg-info iq-progress progress-1" data-percent="<?= $revenuePrecentance ?>"></span>
                         </div>
                     </div>
                 </div>

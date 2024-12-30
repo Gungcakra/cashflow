@@ -44,14 +44,19 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
     $data = query("SELECT * FROM cashflow WHERE idCashflow = ?", [$idCashflow])[0];
     $dataBank = query("SELECT * FROM bank WHERE idBank = ?", [$data['idBank']])[0];
 
-    $updateSaldo = $dataBank['saldo'] - $data['nominal'];
+    if($data['jenis'] === 'kredit'){
+        $updateSaldo = $dataBank['saldo'] - $data['nominal'];
+    } else {
+        $updateSaldo = $dataBank['saldo'] + $data['nominal'];
+    }
 
-    $query = "DELETE FROM cashflow WHERE idCashflow = ?";
-    $result = query($query, [$idCashflow]);
+    $query = "UPDATE bank SET saldo = ? WHERE idBank = ?";
+    $result = query($query, [$updateSaldo, $data['idBank']]);
 
+    
     if ($result > 0) {
-        $query = "UPDATE bank SET saldo = ? WHERE idBank = ?";
-        $result = query($query, [$updateSaldo, $data['idBank']]);
+        $query = "DELETE FROM cashflow WHERE idCashflow = ?";
+        $result = query($query, [$idCashflow]);
         echo json_encode([
             "status" => true,
             "pesan" => "Cashflow deleted successfully!"
@@ -64,14 +69,24 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
     }
 } else if ($_POST['flagCashflow'] && $_POST['flagCashflow'] === 'update') {
     $idCashflow = $_POST['idCashflow'];
+
     $nama = $_POST['nama'];
     $nominal = $_POST['nominal'];
     $jenis = $_POST['jenis'];
     $idBank = $_POST['idBank'];
-
+    
+    $cekData = query("SELECT * FROM cashflow WHERE idCashflow = ?", [$idCashflow])[0];
     $dataBank = query("SELECT * FROM bank WHERE idBank = ?", [$idBank])[0];
 
-    if($jenis === 'kredit'){
+    // Revert the previous transaction
+    if ($cekData['jenis'] === 'kredit') {
+        $dataBank['saldo'] -= $cekData['nominal'];
+    } else {
+        $dataBank['saldo'] += $cekData['nominal'];
+    }
+
+    // Apply the new transaction
+    if ($jenis === 'kredit') {
         $saldo = $dataBank['saldo'] + $nominal;
     } else {
         $saldo = $dataBank['saldo'] - $nominal;
@@ -79,8 +94,6 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
 
     $query = "UPDATE cashflow SET idBank = ?, nama = ?, nominal = ?, jenis = ? WHERE idCashflow = ?";
     $result = query($query, [$idBank, $nama, $nominal, $jenis, $idCashflow]);
-
-
 
     if ($result) {
         $query = "UPDATE bank SET saldo = ? WHERE idBank = ?";
