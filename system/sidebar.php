@@ -40,6 +40,27 @@
             ]
         ],
         [
+            'title' => 'Analytic',
+            'icon' => '<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15v4m6-6v6m6-4v4m6-6v6M3 11l6-5 6 5 5.5-5.5"/>
+</svg>
+',
+            'url' => '#',
+            'active' => false,
+            'submenu' => [
+                [
+                    'title' => 'Cashflow',
+                    'icon' => '<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.6 16.733c.234.269.548.456.895.534a1.4 1.4 0 0 0 1.75-.762c.172-.615-.446-1.287-1.242-1.481-.796-.194-1.41-.861-1.241-1.481a1.4 1.4 0 0 1 1.75-.762c.343.077.654.26.888.524m-1.358 4.017v.617m0-5.939v.725M4 15v4m3-6v6M6 8.5 10.5 5 14 7.5 18 4m0 0h-3.5M18 4v3m2 8a5 5 0 1 1-10 0 5 5 0 0 1 10 0Z"/>
+</svg>
+
+',
+                    'url' => BASE_URL_HTML . '/system/analytic/cashflow/',
+                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/analytic/cashflow/'
+                ]
+            ]
+        ],
+        [
             'title' => 'Report',
             'icon' => '<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m4 8h6m-6-4h6m4-8v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/>
@@ -49,13 +70,13 @@
             'active' => false,
             'submenu' => [
                 [
-                    'title' => 'Finance Report',
+                    'title' => 'Bank Report',
                     'icon' => '<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
   <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M8 7V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1M3 18v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
 </svg>
 ',
-                    'url' => BASE_URL_HTML . '/system/report/finance/',
-                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/report/finance/'
+                    'url' => BASE_URL_HTML . '/system/report/bank/',
+                    'active' => $_SERVER['REQUEST_URI'] == BASE_URL_HTML . '/system/report/bank/'
                 ]
             ]
         ],
