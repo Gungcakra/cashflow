@@ -1,148 +1,65 @@
 // document.addEventListener("DOMContentLoaded", function () {
-//   fetch("daftarCashflow.php")
+//   fetch("chartCashflow.php")
 //     .then((response) => response.text())
 //     .then((data) => {
-//       document.getElementById("daftarCashflow").innerHTML = data;
+//       document.getElementById("chartCashflow").innerHTML = data;
 //     })
-//     .catch((error) => console.error("Error loading daftarCashflow:", error));
+//     .catch((error) => console.error("Error loading chartCashflow:", error));
 //   if (document.readyState === "complete") {
-//     daftarCashflow();
+//     chartCashflow();
 //   }
 // });
-document.addEventListener("DOMContentLoaded", function (event) {
-  daftarCashflow();
-});
+// document.addEventListener("DOMContentLoaded", function (event) {
+//   chartCashflow();
+// });
 
-function daftarCashflow() {
-  $.ajax({
-    url: "daftarCashflow.php",
-    type: "post",
-    data: {
-      flagCashflow: "daftar",
-    },
-    beforeSend: function () {},
-    success: function (data, status) {
-      $("#daftarCashflow").html(data);
-      $("#pagination").html($(data).find("#pagination").html());
-    },
-  });
-}
-
-
-function deleteCashflow(id, idBank) {
-  Swal.fire({
-    title: "Are You Sure?",
-    text: "Once canceled, the process cannot be undone!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes!",
-    cancelButtonText: "Cancel!",
-  }).then(function (result) {
-    if (result.isConfirmed) {
-      $.ajax({
-        url: "prosesCashflow.php",
-        type: "post",
-        data: {
-          idCashflow: id,
-          idBank: idBank,
-          flagCashflow: "delete",
-        },
-        dataType: "json",
-
-        success: function (data) {
-          const { status, pesan } = data;
-          notifikasi(status, pesan);
-          daftarCashflow();
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-          console.error("Error:", textStatus, errorThrown);
-          Swal.fire("Error", "Something went wrong!", "error");
-        },
-      });
-    } else if (result.dismiss === Swal.DismissReason.cancel) {
-      Swal.fire("Canceled", "Proses Canceled!", "error");
-    }
-  });
-}
-
-function loadPage(pageNumber) {
-  const limit = $("#limit").val();
-  $.ajax({
-    type: "POST",
-    url: "daftarCashflow.php",
-    data: {
-      flagCashflow: "cari",
-      page: pageNumber,
-      searchQuery: $("#searchQuery").val(),
-      limit: limit,
-    },
-    success: function (data) {
-      $("#daftarCashflow").html(data);
-    },
-  });
-}
-
-function prosesCashflow() {
-  const formCashflow = $("#formCashflowInput")[0];
-  const dataForm = new FormData(formCashflow);
-
-  $.ajax({
-    url: "../prosesCashflow.php",
-    type: "post",
-    enctype: "multipart/form-data",
-    processData: false,
-    contentType: false,
-    data: dataForm,
-    dataType: "json",
-    success: function (data) {
-      const { status, pesan } = data;
-      notifikasi(status, pesan);
-      if (status) {
-        setTimeout(function() {
-          window.location.href = "../";
-        }, 500); // Delay the redirect to allow the notification to show
-      }
-    },
-    error: function (jqXHR, textStatus, errorThrown) {
-      console.error("Error:", textStatus, errorThrown);
-    },
-  });
-  
-}
+// function chartCashflow() {
+//   $.ajax({
+//     url: "chartCashflow.php",
+//     type: "post",
+//     data: {
+//       flagCashflow: "daftar",
+//     },
+//     beforeSend: function () {},
+//     success: function (data, status) {
+//       $("#chartCashflow").html(data);
+//     },
+//   });
+// }
 
 
-function cariDaftarCashflow() {
-  const searchQuery = $("#searchQuery").val();
-  console.log(searchQuery);
-  const limit = $("#limit").val();
-  if (searchQuery || limit) {
-    $.ajax({
-      url: "daftarCashflow.php",
-      type: "post",
-      data: {
-        searchQuery: searchQuery,
-        limit: limit,
-        flagCashflow: "cari",
-      },
-      beforeSend: function () {},
-      success: function (data, status) {
-        $("#daftarCashflow").html(data);
-      },
-    });
-  } else {
-    $.ajax({
-      url: "daftarCashflow.php",
-      type: "post",
-      data: {
-        flagCashflow: "daftar",
-      },
-      beforeSend: function () {},
-      success: function (data, status) {
-        $("#daftarCashflow").html(data);
-      },
-    });
-  }
-}
+// function cariDaftarCashflow() {
+//   const searchQuery = $("#searchQuery").val();
+//   console.log(searchQuery);
+//   const limit = $("#limit").val();
+//   if (searchQuery || limit) {
+//     $.ajax({
+//       url: "chartCashflow.php",
+//       type: "post",
+//       data: {
+//         searchQuery: searchQuery,
+//         limit: limit,
+//         flagCashflow: "cari",
+//       },
+//       beforeSend: function () {},
+//       success: function (data, status) {
+//         $("#chartCashflow").html(data);
+//       },
+//     });
+//   } else {
+//     $.ajax({
+//       url: "chartCashflow.php",
+//       type: "post",
+//       data: {
+//         flagCashflow: "daftar",
+//       },
+//       beforeSend: function () {},
+//       success: function (data, status) {
+//         $("#chartCashflow").html(data);
+//       },
+//     });
+//   }
+// }
 
 
 
