@@ -5,7 +5,35 @@ require_once "../../../library/konfigurasi.php";
 //CEK USER
 checkUserSession($db);
 
+$thisMonthIncome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tanggal) = MONTH(CURRENT_DATE()) ORDER BY tanggal ASC", ['kredit']);
+$thisMonthOutcome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tanggal) = MONTH(CURRENT_DATE()) ORDER BY tanggal ASC", params: ['debet']);
 
+if (!empty($thisMonthIncome)) {
+    foreach ($thisMonthIncome as $income) {
+        $incomeAmount[] = $income['nominal'];
+        $incomeDate[] = $income['tanggal'];
+        $incomeName[] = $income['nama'];
+    }
+}
+
+if (!empty($thisMonthOutcome)) {
+    foreach ($thisMonthOutcome as $outcome) {
+        $outcomeAmount[] = $outcome['nominal'];
+        $outcomeDate[] = $outcome['tanggal'];
+        $outcomeName[] = $outcome['nama'];
+    }
+}
+
+// Berikan nilai default jika array kosong
+if (empty($incomeDate) && empty($outcomeDate)) {
+    $defaultDate = date('Y-m-d');
+    $incomeDate = [$defaultDate];
+    $outcomeDate = [$defaultDate];
+    $incomeAmount = [0];
+    $outcomeAmount = [0];
+    $incomeName = ['No Data'];
+    $outcomeName = ['No Data'];
+}
 
 ?>
 <!doctype html>
@@ -48,7 +76,8 @@ checkUserSession($db);
         <?php require_once "{$constant('BASE_URL_PHP')}/system/navbar.php" ?>
 
         <div class="content-page">
-            <h1>TESTT</h1>
+            <canvas id="profitLossIncomeChart" width="400" height="200"></canvas>
+
         </div>
     </div>
     <!-- Wrapper End-->
@@ -70,6 +99,8 @@ checkUserSession($db);
     <!-- Chart Custom JavaScript -->
     <script src="<?= BASE_URL_HTML ?>/assets/js/customizer.js"></script>
 
+
+
     <!-- Chart Custom JavaScript -->
     <script async src="<?= BASE_URL_HTML ?>/assets/js/chart-custom.js"></script>
     <!-- Chart Custom JavaScript -->
@@ -81,10 +112,102 @@ checkUserSession($db);
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
     <!-- MAIN JS -->
 
-    <script src="<?= BASE_URL_HTML ?>/system/data/cashflow/cashflow.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('profitLossIncomeChart').getContext('2d');
+
+        const data = {
+            labels: <?= json_encode(array_unique(array_merge($incomeDate, $outcomeDate))) ?>,
+            datasets: [{
+                    label: 'Income',
+                    data: <?= json_encode(array_map(function ($date) use ($incomeDate, $incomeAmount, $incomeName) {
+                                $index = array_search($date, $incomeDate);
+                                return $index !== false
+                                    ? ['x' => $date, 'y' => $incomeAmount[$index], 'name' => $incomeName[$index]]
+                                    : ['x' => $date, 'y' => 0, 'name' => 'No Data'];
+                            }, array_unique(array_merge($incomeDate, $outcomeDate)))) ?>,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    parsing: {
+                        xAxisKey: 'x',
+                        yAxisKey: 'y'
+                    }
+                },
+                {
+                    label: 'Outcome',
+                    data: <?= json_encode(array_map(function ($date) use ($outcomeDate, $outcomeAmount, $outcomeName) {
+                                $index = array_search($date, $outcomeDate);
+                                return $index !== false
+                                    ? ['x' => $date, 'y' => $outcomeAmount[$index], 'name' => $outcomeName[$index]]
+                                    : ['x' => $date, 'y' => 0, 'name' => 'No Data'];
+                            }, array_unique(array_merge($incomeDate, $outcomeDate)))) ?>,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    parsing: {
+                        xAxisKey: 'x',
+                        yAxisKey: 'y'
+                    }
+                }
+            ]
+        };
+
+        const options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Income & Outcome (This Month)'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (context.raw.name) {
+                                label += ': ' + context.raw.name + ' - ' + context.raw.y;
+                            } else {
+                                label += ': ' + context.raw.y;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Amount Rp'
+                    }
+                }
+            }
+        };
+
+        new Chart(ctx, {
+            type: 'line',
+            data: data,
+            options: options
+        });
+    </script>
+
+    <script src="<?= BASE_URL_HTML ?>/system/analytic/cashflow/cashflow.js"></script>
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
 </body>
 
 </html>
