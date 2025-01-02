@@ -16,15 +16,9 @@ $conditions = '';
 $params = [];
 
 if ($flagCashflow === 'cari') {
-
-    // if (!empty($roleId)) {
-    //   $searchQuery = '';
-    //   $conditions .= " WHERE employees.roleId = ?";
-    //   $params[] = $roleId;
-    // }
     if (!empty($searchQuery)) {
         $roleId = '';
-        $conditions .= " WHERE cahsflow.nama LIKE ?";
+        $conditions .= " WHERE cashflow.nama LIKE ?";
         $params[] = "%$searchQuery%";
     }
 }
@@ -40,7 +34,6 @@ $query = "SELECT cashflow.*,
           FROM cashflow 
           INNER JOIN bank 
           ON cashflow.idBank = bank.idBank " . $conditions . " ORDER BY cashflow.tanggal ASC LIMIT ? OFFSET ?";
-
 
 $params[] = $limit;
 $params[] = $offset;
