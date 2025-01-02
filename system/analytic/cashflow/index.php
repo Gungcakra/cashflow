@@ -30,7 +30,7 @@ $outcomeDate = $outcomeDate ?? [];
 $outcomeAmount = $outcomeAmount ?? [];
 $outcomeName = $outcomeName ?? [];
 
-// Process income data
+// Proses data income
 if (!empty($thisMonthIncome)) {
     foreach ($thisMonthIncome as $income) {
         $incomeAmount[] = $income['nominal'];
@@ -39,7 +39,7 @@ if (!empty($thisMonthIncome)) {
     }
 }
 
-// Process outcome data
+// Proses data outcome
 if (!empty($thisMonthOutcome)) {
     foreach ($thisMonthOutcome as $outcome) {
         $outcomeAmount[] = $outcome['nominal'];
@@ -47,7 +47,6 @@ if (!empty($thisMonthOutcome)) {
         $outcomeName[] = $outcome['nama'];
     }
 }
-
 // Get the range of dates
 $dateRange = [];
 
@@ -68,35 +67,37 @@ $allOutcomeDates = array_merge($outcomeDate, $dateRange);
 sort($allIncomeDates);
 sort($allOutcomeDates);
 
-// Fill missing income and outcome data
+// Fill missing income and outcome data with timestamp format
 foreach ($dateRange as $date) {
-    if (!in_array($date, $incomeDate)) {
-        $incomeDate[] = $date;
+    $timestamp = $date . ' 00:00:00'; // Ensure timestamp format
+    if (!in_array($timestamp, $incomeDate)) {
+        $incomeDate[] = $timestamp;
         $incomeAmount[] = 0;
         $incomeName[] = 'No Data';
     }
-    if (!in_array($date, $outcomeDate)) {
-        $outcomeDate[] = $date;
+    if (!in_array($timestamp, $outcomeDate)) {
+        $outcomeDate[] = $timestamp;
         $outcomeAmount[] = 0;
         $outcomeName[] = 'No Data';
     }
 }
 
-// Ensure the arrays are sorted
+// Sort the arrays to ensure correct order
 array_multisort($incomeDate, SORT_ASC, $incomeAmount, $incomeName);
 array_multisort($outcomeDate, SORT_ASC, $outcomeAmount, $outcomeName);
 
-// Default values if no data found
-if (empty($incomeDate) && empty($outcomeDate)) {
-    $defaultDate = date('Y-m-d');
-    $incomeDate = [$defaultDate];
-    $outcomeDate = [$defaultDate];
+
+// Pastikan data memiliki format default jika kosong
+if (empty($incomeDate)) {
+    $incomeDate = ['No Data'];
     $incomeAmount = [0];
-    $outcomeAmount = [0];
     $incomeName = ['No Data'];
+}
+if (empty($outcomeDate)) {
+    $outcomeDate = ['No Data'];
+    $outcomeAmount = [0];
     $outcomeName = ['No Data'];
 }
-
 // Ensure the arrays are not empty, set default values if necessary
 $incomeDate = $incomeDate ?: ['No Data'];
 $incomeAmount = $incomeAmount ?: [0];
@@ -105,7 +106,7 @@ $outcomeDate = $outcomeDate ?: ['No Data'];
 $outcomeAmount = $outcomeAmount ?: [0];
 $outcomeName = $outcomeName ?: ['No Data'];
 
-// Return the data as JSON if rentang is set
+// Return JSON jika rentang ditentukan
 if ($rentang) {
     echo json_encode([
         'incomeDate' => $incomeDate,
@@ -117,7 +118,6 @@ if ($rentang) {
     ]);
     exit;
 }
-
 
 
 ?>

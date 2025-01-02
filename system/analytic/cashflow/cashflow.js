@@ -57,16 +57,40 @@ function changeCashflowChart() {
 function updateChart(parsedData) {
   const ctx = document.getElementById("profitLossIncomeChart").getContext("2d");
 
+  // Merge and sort unique dates
+  const allDates = [...new Set([...parsedData.incomeDate, ...parsedData.outcomeDate])]
+    .sort((a, b) => new Date(a) - new Date(b));
+
+  // Create a mapping of dates to income and outcome data
+  const incomeMap = parsedData.incomeDate.reduce((acc, date, index) => {
+    acc[date] = { y: parsedData.incomeAmount[index] || 0, name: parsedData.incomeName[index] || "No Data" };
+    return acc;
+  }, {});
+
+  const outcomeMap = parsedData.outcomeDate.reduce((acc, date, index) => {
+    acc[date] = { y: parsedData.outcomeAmount[index] || 0, name: parsedData.outcomeName[index] || "No Data" };
+    return acc;
+  }, {});
+
+  // Generate data points for each dataset, ensuring dates are aligned
+  const incomeData = allDates.map((date) => ({
+    x: date,
+    y: incomeMap[date]?.y || 0,
+    name: incomeMap[date]?.name || "No Data",
+  }));
+
+  const outcomeData = allDates.map((date) => ({
+    x: date,
+    y: outcomeMap[date]?.y || 0,
+    name: outcomeMap[date]?.name || "No Data",
+  }));
+
   const data = {
-    labels: [...new Set([...parsedData.incomeDate, ...parsedData.outcomeDate])], // Merge dates
+    labels: allDates, // Sorted labels
     datasets: [
       {
         label: "Income",
-        data: parsedData.incomeDate.map((date, index) => ({
-          x: date,
-          y: parsedData.incomeAmount[index] || 0,
-          name: parsedData.incomeName[index] || "No Data",
-        })),
+        data: incomeData,
         borderColor: "rgba(54, 162, 235, 1)",
         backgroundColor: "rgba(54, 162, 235, 0.2)",
         fill: true,
@@ -78,11 +102,7 @@ function updateChart(parsedData) {
       },
       {
         label: "Outcome",
-        data: parsedData.outcomeDate.map((date, index) => ({
-          x: date,
-          y: parsedData.outcomeAmount[index] || 0,
-          name: parsedData.outcomeName[index] || "No Data",
-        })),
+        data: outcomeData,
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         fill: true,
@@ -103,7 +123,7 @@ function updateChart(parsedData) {
       },
       title: {
         display: true,
-        text: `Income & Outcome` ,
+        text: `Income & Outcome`,
       },
       tooltip: {
         callbacks: {
@@ -142,6 +162,7 @@ function updateChart(parsedData) {
     options: options,
   });
 }
+
 
 function recreateCanvas() {
   // Get the container that holds the canvas (e.g., <div id="chartContainer">)
