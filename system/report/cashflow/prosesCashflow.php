@@ -12,7 +12,7 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
     $nominal = $_POST['nominal'];
     $jenis = $_POST['jenis'];
     $idBank = $_POST['idBank'];
-
+    $tanggal = date('Y-m-d');
     $dataBank = query("SELECT * FROM bank WHERE idBank = ?", [$idBank])[0];
 
     if($jenis === 'kredit'){
@@ -21,7 +21,7 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
         $saldo = $dataBank['saldo'] - $nominal;
     }
     
-    $query = "INSERT INTO cashflow (idBank, nama, nominal, jenis) VALUES (?, ?, ?, ?)";
+    $query = "INSERT INTO cashflow (idBank, nama, nominal, jenis, tanggal) VALUES (?, ?, ?, ?, ?)";
 
     $result = query($query, [$idBank, $nama, $nominal, $jenis]);
 

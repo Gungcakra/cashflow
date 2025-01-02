@@ -4,32 +4,91 @@ require_once "../../../library/konfigurasi.php";
 require_once "{$constant('BASE_URL_PHP')}/library/fungsiRupiah.php";
 require_once "{$constant('BASE_URL_PHP')}/library/fungsiTanggal.php";
 
-
 // CEK USER
 checkUserSession($db);
 
-$thisMonthIncome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tanggal) = MONTH(CURRENT_DATE()) ORDER BY tanggal ASC", ['kredit']);
-$thisMonthOutcome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tanggal) = MONTH(CURRENT_DATE()) ORDER BY tanggal ASC", params: ['debet']);
+$rentang = $_POST['rentang'] ?? '';
+if ($rentang) {
+    list($firstDate, $endDate) = explode(" - ", $rentang);
+    $firstDate = date("Y-m-d", strtotime($firstDate));
+    $endDate = date("Y-m-d", strtotime($endDate));
 
+    // Update the SQL queries to use the date range
+    $thisMonthIncome = query("SELECT * FROM cashflow WHERE jenis = ? AND tanggal BETWEEN ? AND ? ORDER BY tanggal ASC", ['kredit', $firstDate, $endDate]);
+    $thisMonthOutcome = query("SELECT * FROM cashflow WHERE jenis = ? AND tanggal BETWEEN ? AND ? ORDER BY tanggal ASC", ['debet', $firstDate, $endDate]);
+} else {
+    // Default query if no date range is provided
+    $thisMonthIncome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tanggal) = MONTH(CURRENT_DATE()) ORDER BY tanggal ASC", ['kredit']);
+    $thisMonthOutcome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tanggal) = MONTH(CURRENT_DATE()) ORDER BY tanggal ASC", ['debet']);
+}
+
+// Initialize arrays to avoid undefined variable warnings
+$incomeDate = $incomeDate ?? [];
+$incomeAmount = $incomeAmount ?? [];
+$incomeName = $incomeName ?? [];
+$outcomeDate = $outcomeDate ?? [];
+$outcomeAmount = $outcomeAmount ?? [];
+$outcomeName = $outcomeName ?? [];
+
+// Process income data
 if (!empty($thisMonthIncome)) {
     foreach ($thisMonthIncome as $income) {
         $incomeAmount[] = $income['nominal'];
-        $incomeDate[] = timestampToTanggal($income['tanggal']);
+        $incomeDate[] = $income['tanggal'];
         $incomeName[] = $income['nama'];
     }
 }
 
+// Process outcome data
 if (!empty($thisMonthOutcome)) {
     foreach ($thisMonthOutcome as $outcome) {
         $outcomeAmount[] = $outcome['nominal'];
-        $outcomeDate[] = timestampToTanggal($outcome['tanggal']);
+        $outcomeDate[] = $outcome['tanggal'];
         $outcomeName[] = $outcome['nama'];
     }
 }
 
-// Berikan nilai default jika array kosong
+// Get the range of dates
+$dateRange = [];
+
+if (!empty($firstDate)) {
+    $currentDate = strtotime($firstDate);
+    $endDate = strtotime($endDate);
+    while ($currentDate <= $endDate) {
+        $dateRange[] = date("Y-m-d", $currentDate);
+        $currentDate = strtotime("+1 day", $currentDate);
+    }
+}
+
+// Merge and sort dates
+$allIncomeDates = array_merge($incomeDate, $dateRange);
+$allOutcomeDates = array_merge($outcomeDate, $dateRange);
+
+// Sort the dates in ascending order
+sort($allIncomeDates);
+sort($allOutcomeDates);
+
+// Fill missing income and outcome data
+foreach ($dateRange as $date) {
+    if (!in_array($date, $incomeDate)) {
+        $incomeDate[] = $date;
+        $incomeAmount[] = 0;
+        $incomeName[] = 'No Data';
+    }
+    if (!in_array($date, $outcomeDate)) {
+        $outcomeDate[] = $date;
+        $outcomeAmount[] = 0;
+        $outcomeName[] = 'No Data';
+    }
+}
+
+// Ensure the arrays are sorted
+array_multisort($incomeDate, SORT_ASC, $incomeAmount, $incomeName);
+array_multisort($outcomeDate, SORT_ASC, $outcomeAmount, $outcomeName);
+
+// Default values if no data found
 if (empty($incomeDate) && empty($outcomeDate)) {
-    $defaultDate = timestampToTanggal(date('Y-m-d'));
+    $defaultDate = date('Y-m-d');
     $incomeDate = [$defaultDate];
     $outcomeDate = [$defaultDate];
     $incomeAmount = [0];
@@ -37,6 +96,29 @@ if (empty($incomeDate) && empty($outcomeDate)) {
     $incomeName = ['No Data'];
     $outcomeName = ['No Data'];
 }
+
+// Ensure the arrays are not empty, set default values if necessary
+$incomeDate = $incomeDate ?: ['No Data'];
+$incomeAmount = $incomeAmount ?: [0];
+$incomeName = $incomeName ?: ['No Data'];
+$outcomeDate = $outcomeDate ?: ['No Data'];
+$outcomeAmount = $outcomeAmount ?: [0];
+$outcomeName = $outcomeName ?: ['No Data'];
+
+// Return the data as JSON if rentang is set
+if ($rentang) {
+    echo json_encode([
+        'incomeDate' => $incomeDate,
+        'incomeAmount' => $incomeAmount,
+        'outcomeDate' => $outcomeDate,
+        'outcomeAmount' => $outcomeAmount,
+        'incomeName' => $incomeName,
+        'outcomeName' => $outcomeName
+    ]);
+    exit;
+}
+
+
 
 ?>
 <!doctype html>
@@ -60,6 +142,9 @@ if (empty($incomeDate) && empty($outcomeDate)) {
 
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <!-- Date Range -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 </head>
 
 <body class="  ">
@@ -78,8 +163,17 @@ if (empty($incomeDate) && empty($outcomeDate)) {
         <!-- NAVBAR  -->
         <?php require_once "{$constant('BASE_URL_PHP')}/system/navbar.php" ?>
 
-        <div class="content-page">
+        <div class="content-page" id="chartContainer">
+            <h2>CashFlow Chart</h2>
+            <div class="input-group mb- col-lg-3 col-md-4 col-sm-4 bg-none"> 
+                <input type="text" class="form-control bg-white" name="rentang" id="rentang">
+                <div class="input-group-prepend bg-white">
+                    <span class="input-group-text bg-white" id="basic-addon4"><i class="las la-calendar"></i> </span>
+                </div>
+            </div>
+            
             <canvas id="profitLossIncomeChart" width="400" height="200"></canvas>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         </div>
     </div>
@@ -113,9 +207,14 @@ if (empty($incomeDate) && empty($outcomeDate)) {
     <script src="<?= BASE_URL_HTML ?>/assets/js/app.js"></script>
 
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
-    <!-- MAIN JS -->
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Date Range -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <!-- MAIN JS -->
+    <script src="<?= BASE_URL_HTML ?>/system/analytic/cashflow/cashflow.js"></script>
+
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         const ctx = document.getElementById('profitLossIncomeChart').getContext('2d');
 
@@ -166,7 +265,7 @@ if (empty($incomeDate) && empty($outcomeDate)) {
                 },
                 title: {
                     display: true,
-                    text: 'Income & Outcome (This Month)'
+                    text: 'Income & Outcome <?= $rentang ?>'
                 },
                 tooltip: {
                     callbacks: {
@@ -204,12 +303,6 @@ if (empty($incomeDate) && empty($outcomeDate)) {
             options: options
         });
     </script>
-
-    <script src="<?= BASE_URL_HTML ?>/system/analytic/cashflow/cashflow.js"></script>
-
-    <!-- Toastr JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
 
 </body>
 
