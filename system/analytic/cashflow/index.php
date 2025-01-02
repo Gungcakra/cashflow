@@ -1,8 +1,11 @@
 <?php
 session_start();
 require_once "../../../library/konfigurasi.php";
+require_once "{$constant('BASE_URL_PHP')}/library/fungsiRupiah.php";
+require_once "{$constant('BASE_URL_PHP')}/library/fungsiTanggal.php";
 
-//CEK USER
+
+// CEK USER
 checkUserSession($db);
 
 $thisMonthIncome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tanggal) = MONTH(CURRENT_DATE()) ORDER BY tanggal ASC", ['kredit']);
@@ -11,7 +14,7 @@ $thisMonthOutcome = query("SELECT * FROM cashflow WHERE jenis = ? AND MONTH(tang
 if (!empty($thisMonthIncome)) {
     foreach ($thisMonthIncome as $income) {
         $incomeAmount[] = $income['nominal'];
-        $incomeDate[] = $income['tanggal'];
+        $incomeDate[] = timestampToTanggal($income['tanggal']);
         $incomeName[] = $income['nama'];
     }
 }
@@ -19,14 +22,14 @@ if (!empty($thisMonthIncome)) {
 if (!empty($thisMonthOutcome)) {
     foreach ($thisMonthOutcome as $outcome) {
         $outcomeAmount[] = $outcome['nominal'];
-        $outcomeDate[] = $outcome['tanggal'];
+        $outcomeDate[] = timestampToTanggal($outcome['tanggal']);
         $outcomeName[] = $outcome['nama'];
     }
 }
 
 // Berikan nilai default jika array kosong
 if (empty($incomeDate) && empty($outcomeDate)) {
-    $defaultDate = date('Y-m-d');
+    $defaultDate = timestampToTanggal(date('Y-m-d'));
     $incomeDate = [$defaultDate];
     $outcomeDate = [$defaultDate];
     $incomeAmount = [0];
