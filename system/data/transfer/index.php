@@ -54,7 +54,7 @@ checkUserSession($db);
                         <div class="card">
                             <div class="card-header d-flex justify-content-between">
                                 <div class="header-title">
-                                    <h4 class="card-title">Bank List</h4>
+                                    <h4 class="card-title">Transfer List</h4>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -68,11 +68,11 @@ checkUserSession($db);
                                                         <input type="text" class="form-control" id="searchQuery" placeholder="Search"
                                                             name="searchQuery"
                                                             autocomplete="off"
-                                                            onkeyup="cariDaftarBank()"
+                                                            onkeyup="cariDaftarTransfer()"
                                                             aria-controls="user-list-table">
                                                     </div>
                                                     <div class="col-md-2 m-0 p-0 ml-2">
-                                                        <select class="custom-select" id="limit" name="limit" onclick="cariDaftarBank()">
+                                                        <select class="custom-select" id="limit" name="limit" onclick="cariDaftarTransfer()">
                                                             <option value="10">10</option>
                                                             <option value="20">20</option>
                                                             <option value="50">50</option>
@@ -91,16 +91,16 @@ checkUserSession($db);
                                                 <button class="btn btn-primary mr-1" href="javascript:void();">
                                                     Excel
                                                 </button> -->
-                                                <!-- <a class="btn btn-primary mr-1" href="./transfer/"><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                                <a class="btn btn-primary mr-1" href="./transfer/"><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 10 3-3m0 0-3-3m3 3H5v3m3 4-3 3m0 0 3 3m-3-3h14v-3" />
                                                     </svg>
-                                                    Transfer</a> -->
-                                                <a class="btn btn-primary mr-1" href="./form/">+ Bank</a>
+                                                    Transfer</a>
+                                                <a class="btn btn-primary mr-1" href="./form/">+ Transfer</a>
 
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="daftarBank" class="w-100">
+                                    <div id="daftarTransfer" class="w-100">
 
                                     </div>
                                 </div>
@@ -144,7 +144,7 @@ checkUserSession($db);
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
     <!-- MAIN JS -->
 
-    <script src="<?= BASE_URL_HTML ?>/system/data/bank/bank.js"></script>
+    <script src="<?= BASE_URL_HTML ?>/system/data/transfer/transfer.js"></script>
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
