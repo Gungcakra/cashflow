@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../../../library/konfigurasi.php";
+require_once "{$constant('BASE_URL_PHP')}/library/fungsiTanggal.php";
 require_once "{$constant('BASE_URL_PHP')}/library/fungsiRupiah.php";
 
 //CEK USER
@@ -28,13 +29,19 @@ if ($flagGoal === 'cari') {
     }
 }
 
-$totalQuery = "SELECT COUNT(*) as total FROM goal " . $conditions;
+$totalQuery = "SELECT COUNT(*) as total 
+               FROM goal 
+               INNER JOIN bank ON goal.idBank = bank.idBank " . $conditions;
 $totalResult = query($totalQuery, $params);
 $totalRecords = $totalResult[0]['total'];
 $totalPages = ceil($totalRecords / $limit);
 
-$query = "SELECT *
-          FROM goal " . $conditions . " LIMIT ? OFFSET ?";
+$query = "SELECT goal.*, 
+                 bank.idBank,
+                 bank.nama as namaBank,
+                 bank.saldo as modal
+          FROM goal 
+          INNER JOIN bank ON goal.idBank = bank.idBank" . $conditions . " LIMIT ? OFFSET ?";
 
 
 $params[] = $limit;
@@ -49,8 +56,12 @@ $goal = query($query, $params);
             <th>#</th>
             <th style="min-width: 100px">Action</th>
             <th>Name</th>
-            <th>Name</th>
-            <th>Balance</th>
+            <th>Bank</th>
+            <th>Modal</th>
+            <th>Nominal</th>
+            <th>Start Date</th>
+            <th>Target Date</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
@@ -81,12 +92,17 @@ $goal = query($query, $params);
                     </div>
                 </td>
                 <td><?= $row['nama'] ?></td>
-                <td><?= rupiah($row['saldo']) ?></td>
+                <td><?= $row['namaBank'] ?></td>
+                <td><?= rupiah($row['modal']) ?></td>
+                <td><?= rupiah($row['nominal']) ?></td>
+                <td><?= tanggalTerbilang($row['tanggalMulai'])?></td>
+                <td><?= tanggalTerbilang(date: $row['tanggalGoal'])?></td>
+                <td><h5><i class="p-2 rounded las la-<?= $row['status'] === 0 ? 'clock bg-warning' : 'check-circle bg-success' ?>"></i></h5></td>
         </tr>
         <?php endforeach; ?>
         <?php } else{ ?>
         <tr>
-            <td colspan="4" class="text-center">No data found!</td>
+            <td colspan="10" class="text-center">No data found!</td>
         </tr>
         <?php } ?>
     </tbody>

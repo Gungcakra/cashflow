@@ -1,15 +1,11 @@
 <?php
 session_start();
 require_once "../../../../library/konfigurasi.php";
+
 checkUserSession($db);
 
-$idBank = $_GET['data'] ?? '';
-if ($idBank) {
-    $data = query("SELECT * FROM bank WHERE idBank = ?", [$idBank])[0];
-    $flagBank = 'update';
-} else {
-    $flagBank = 'add';
-}
+$flagGoal = 'add';
+$bank = query("SELECT * FROM bank", []);
 ?>
 
 <!doctype html>
@@ -54,23 +50,40 @@ if ($idBank) {
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12 bg-white p-2">
-                        <form id="formBankInput">
+                        <form id="formGoalInput">
+                            <div class="form-row">
+                                <input type="hidden" name="flagGoal" id="flagGoal" value="<?= $flagGoal ?>">
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="cashflowname">Name</label>
+                                    <input type="text" name="nama" id="nama" class="form-control" placeholder="Goal Name" autocomplete="off" value="<?= $data['nama'] ?? '' ?>">
+                                </div>
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="cashflowname">Bank</label>
+                                    <select class="form-control" id="idBank" name="idBank">
+                                        <option value="">Select Bank</option>
+                                        <?php
+                                        foreach ($bank as $row) : ?>
+                                            <option value="<?= $row['idBank'] ?>" <?= isset($data['idBank']) && $row['idBank'] === $data['idBank'] ? 'selected' : '' ?>><?= $row['nama'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+
+                                </div>
+                            </div>
                             <div class="form-row">
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="bankname">Bank Name</label>
-                                    <input type="hidden" name="flagBank" id="flagBank" value="<?= $flagBank ?>">
-                                    <input type="hidden" name="idBank" id="idBank" value="<?= $idBank ?>">
-                                    <input type="text" class="form-control" id="nama" name="nama" value="<?= $data['nama'] ?? '' ?>" autocomplete="off" placeholder="Bank Name">
+                                    <label for="bankname">Nominal</label>
+                                    <input type="number" class="form-control" id="nominal" name="nominal" autocomplete="off" placeholder="Goal Nominal" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['nominal'] ?? '' ?>">
+    
                                 </div>
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="bankname">Balance</label>
-                                    <input type="number" class="form-control" id="saldo" name="saldo" autocomplete="off" placeholder="Bank Balance" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['saldo'] ?? '' ?>">
-                                    
+                                    <label for="keterangan">Target Date</label>
+                                    <input type="date" class="form-control" id="tanggalGoal" name="tanggalGoal" autocomplete="off" placeholder="Goal Description">
                                 </div>
+                    
                             </div>
                         </form>
 
-                        <button type="button" class="btn btn-<?= $flagBank === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesBank()"><i class="ri-save-3-line"></i>Simpan</button>
+                        <button type="button" class="btn btn-<?= $flagGoal === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesGoal()"><i class="ri-save-3-line"></i>Simpan</button>
                     </div>
                 </div>
             </div>
@@ -103,10 +116,10 @@ if ($idBank) {
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
 
     <!-- MAIN JS -->
-    <script src="<?= BASE_URL_HTML ?>/system/data/bank/bank.js"></script>
+    <script src="<?= BASE_URL_HTML ?>/system/data/goal/goal.js"></script>
 
-        <!-- Toastr JS -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </body>
 
 </html>

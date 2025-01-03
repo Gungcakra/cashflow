@@ -6,87 +6,91 @@ require_once "../../../library/konfigurasi.php";
 //CEK USER
 checkUserSession($db);
 
-// Check if the flagBank is set
-if (isset($_POST['flagBank']) && $_POST['flagBank'] === 'add') {
+// Check if the flagGoal is set
+if (isset($_POST['flagGoal']) && $_POST['flagGoal'] === 'add') {
+    $idBank = $_POST['idBank'];
     $nama = $_POST['nama'];
-    $saldo = $_POST['saldo'];
+    $nominal = $_POST['nominal'];
+    $tanggalMulai = date('Y-m-d');
+    $tanggalGoal = $_POST['tanggalGoal'];
+    $status = 0;
 
-    $query = "INSERT INTO bank (nama, saldo) VALUES (?, ?)";
+    $query = "INSERT INTO goal (idBank, nama, nominal, tanggalMulai, tanggalGoal, status) VALUES (?, ?, ?, ?, ?, ?)";
 
-    $result = query($query, [$nama, $saldo]);
+    $result = query($query, [$idBank, $nama, $nominal, $tanggalMulai, $tanggalGoal, $status]);
 
     if ($result > 0) {
         echo json_encode([
             "status" => true,
-            "pesan" => "Bank added successfully!"
+            "pesan" => "Goal added successfully!"
         ]);
     } else {
         echo json_encode([
             "status" => false,
-            "pesan" => "Failed to add Bank."
+            "pesan" => "Failed to add Goal."
         ]);
     }
-} else if (isset($_POST['flagBank']) && $_POST['flagBank'] === 'delete') {
-    $idBank = $_POST['idBank'];
+} else if (isset($_POST['flagGoal']) && $_POST['flagGoal'] === 'delete') {
+    $idGoal = $_POST['idGoal'];
 
-    $query = "DELETE FROM bank WHERE idBank = ?";
-    $result = query($query, [$idBank]);
+    $query = "DELETE FROM goal WHERE idGoal = ?";
+    $result = query($query, [$idGoal]);
 
     if ($result > 0) {
         echo json_encode([
             "status" => true,
-            "pesan" => "Bank deleted successfully!"
+            "pesan" => "Goal deleted successfully!"
         ]);
     } else {
         echo json_encode([
             "status" => false,
-            "pesan" => "Failed to delete Bank: " . mysqli_error($db)
+            "pesan" => "Failed to delete Goal: " . mysqli_error($db)
         ]);
     }
-} else if ($_POST['flagBank'] && $_POST['flagBank'] === 'update') {
-    $idBank = $_POST['idBank'];
+} else if ($_POST['flagGoal'] && $_POST['flagGoal'] === 'update') {
+    $idGoal = $_POST['idGoal'];
     $nama = $_POST['nama'];
     $saldo = $_POST['saldo'];
 
 
-    $query = "UPDATE bank 
+    $query = "UPDATE goal 
           SET nama = ?, 
               saldo = ?
-          WHERE idBank = ?";
+          WHERE idGoal = ?";
 
-    $result = query($query, [$nama, $saldo, $idBank]);
+    $result = query($query, [$nama, $saldo, $idGoal]);
 
 
     if ($result) {
         echo json_encode([
             "status" => true,
-            "pesan" => "Bank updated successfully!"
+            "pesan" => "Goal updated successfully!"
         ]);
     } else {
         echo json_encode([
             "status" => false,
-            "pesan" => "Failed to update Bank: " . mysqli_error($db)
+            "pesan" => "Failed to update Goal: " . mysqli_error($db)
         ]);
     }
-} else if ($_POST['flagBank'] && $_POST['flagBank'] === 'transfer'){
-        $idBankAsal = $_POST['idBankAsal'];
-        $idBankTujuan = $_POST['idBankTujuan'];
+} else if ($_POST['flagGoal'] && $_POST['flagGoal'] === 'transfer'){
+        $idGoalAsal = $_POST['idGoalAsal'];
+        $idGoalTujuan = $_POST['idGoalTujuan'];
         $nominal = $_POST['nominal'];
         $keterangan = $_POST['keterangan'];
         
-        $saldoBankAsal = query("SELECT saldo FROM bank WHERE idBank = ?", [$idBankAsal])[0]['saldo'];
-        $saldoBankTujuan = query("SELECT saldo FROM bank WHERE idBank = ?", [$idBankTujuan])[0]['saldo'];
+        $saldoGoalAsal = query("SELECT saldo FROM goal WHERE idGoal = ?", [$idGoalAsal])[0]['saldo'];
+        $saldoGoalTujuan = query("SELECT saldo FROM goal WHERE idGoal = ?", [$idGoalTujuan])[0]['saldo'];
         
-        $updateSaldoBankAsal = $saldoBankAsal - $nominal;
-        $updateSaldoBankTujuan = $saldoBankTujuan + $nominal;
+        $updateSaldoGoalAsal = $saldoGoalAsal - $nominal;
+        $updateSaldoGoalTujuan = $saldoGoalTujuan + $nominal;
 
-        $query = "INSERT INTO transfer (idBankAsal, idBankTujuan, nominal, keterangan) VALUES (?, ?, ?, ?)";
+        $query = "INSERT INTO transfer (idGoalAsal, idGoalTujuan, nominal, keterangan) VALUES (?, ?, ?, ?)";
 
-        $result = query($query, [$idBankAsal, $idBankTujuan, $nominal, $keterangan]);
+        $result = query($query, [$idGoalAsal, $idGoalTujuan, $nominal, $keterangan]);
 
         if ($result > 0) {
-            $updateBankAsal = query("UPDATE bank SET saldo = ? WHERE idBank = ?", [$updateSaldoBankAsal, $idBankAsal]);
-            $updateBankTujuan = query("UPDATE bank SET saldo = ? WHERE idBank = ?", [$updateSaldoBankTujuan, $idBankTujuan]);
+            $updateGoalAsal = query("UPDATE goal SET saldo = ? WHERE idGoal = ?", [$updateSaldoGoalAsal, $idGoalAsal]);
+            $updateGoalTujuan = query("UPDATE goal SET saldo = ? WHERE idGoal = ?", [$updateSaldoGoalTujuan, $idGoalTujuan]);
             echo json_encode([
                 "status" => true,
                 "pesan" => "Transfer successfully!"
