@@ -2,6 +2,7 @@
 session_start();
 require_once "../../../library/konfigurasi.php";
 require_once "{$constant('BASE_URL_PHP')}/library/fungsiRupiah.php";
+require_once "{$constant('BASE_URL_PHP')}/library/fungsiTanggal.php";
 
 //CEK USER
 checkUserSession($db);
@@ -29,18 +30,24 @@ if ($flagTransfer === 'cari') {
     }
 }
 
-$totalQuery = "SELECT COUNT(*) as total FROM bank " . $conditions;
+$totalQuery = "SELECT COUNT(*) as total FROM transfer  
+               INNER JOIN bank AS bankAsal ON transfer.idBankAsal = bankAsal.idBank
+               INNER JOIN bank AS bankTujuan ON transfer.idBankTujuan = bankTujuan.idBank" . $conditions;
 $totalResult = query($totalQuery, $params);
 $totalRecords = $totalResult[0]['total'];
 $totalPages = ceil($totalRecords / $limit);
 
-$query = "SELECT *
-          FROM bank " . $conditions . " LIMIT ? OFFSET ?";
+$query = "SELECT transfer.*,
+                 bankAsal.nama AS namaBankAsal,
+                 bankTujuan.nama AS namaBankTujuan
+          FROM transfer 
+          INNER JOIN bank AS bankAsal ON transfer.idBankAsal = bankAsal.idBank
+          INNER JOIN bank AS bankTujuan ON transfer.idBankTujuan = bankTujuan.idBank" . $conditions . " LIMIT ? OFFSET ?";
 
 
 $params[] = $limit;
 $params[] = $offset;
-$bank = query($query, $params);
+$transfer = query($query, $params);
 ?>
 
 <table id="bank-list-table" class="table table-striped dataTable mt-4" role="grid"
@@ -49,14 +56,17 @@ $bank = query($query, $params);
         <tr class="ligth">
             <th>#</th>
             <th style="min-width: 100px">Action</th>
-            <th>Name</th>
-            <th>Balance</th>
+            <th>Origin Bank</th>
+            <th>Destination Bank</th>
+            <th>Nominal</th>
+            <th>Description</th>
+            <th>Date</th>
         </tr>
     </thead>
     <tbody>
-        <?php if($bank){ ?>
+        <?php if($transfer){ ?>
         <tr>
-            <?php foreach ($bank as $key => $row): ?>
+            <?php foreach ($transfer as $key => $row): ?>
                 <td><?= $key + 1 ?></td>
                 <td>
                     <div class="btn-group" role="group"></div>
@@ -80,13 +90,16 @@ $bank = query($query, $params);
                     </div>
                     </div>
                 </td>
-                <td><?= $row['nama'] ?></td>
-                <td><?= rupiah($row['saldo']) ?></td>
+                <td><?= $row['namaBankAsal'] ?></td>
+                <td><?= $row['namaBankTujuan'] ?></td>
+                <td><?= rupiah($row['nominal']) ?></td>
+                <td><?= $row['keterangan'] ?></td>
+                <td><?= timestampToTanggal($row['tanggal']) ?></td>
         </tr>
         <?php endforeach; ?>
         <?php } else{ ?>
         <tr>
-            <td colspan="4" class="text-center">No data found!</td>
+            <td colspan="10" class="text-center">No data found!</td>
         </tr>
         <?php } ?>
     </tbody>

@@ -99,7 +99,7 @@ function prosesTransfer() {
       if (status) {
         setTimeout(function() {
           window.location.href = "../";
-        }, 500); // Delay the redirect to allow the notification to show
+        }, 500); 
       }
     },
     error: function (jqXHR, textStatus, errorThrown) {

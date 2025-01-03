@@ -1,21 +1,10 @@
 <?php
 session_start();
 require_once "../../../../library/konfigurasi.php";
+
 checkUserSession($db);
 
-$idCashflow = $_GET['data'] ?? '';
-if ($idCashflow) {
-    $data = query("SELECT cashflow.*,
-                                 bank.idBank,
-                                 bank.nama AS namaBank
-                          FROM cashflow 
-                          INNER JOIN bank 
-                          ON cashflow.idBank = bank.idBank
-                          WHERE idCashflow = ?", [$idCashflow])[0];
-    $flagCashflow = 'update';
-} else {
-    $flagCashflow = 'add';
-}
+$flagTransfer = 'transfer';
 $bank = query("SELECT * FROM bank", []);
 ?>
 
@@ -61,33 +50,23 @@ $bank = query("SELECT * FROM bank", []);
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12 bg-white p-2">
-                        <form id="formCashflowInput">
+                        <form id="formTransferInput">
                             <div class="form-row">
+                                <input type="hidden" name="flagTransfer" id="flagTransfer" value="<?= $flagTransfer ?>">
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="cashflowname">Cashflow Name</label>
-                                    <input type="hidden" name="flagCashflow" id="flagCashflow" value="<?= $flagCashflow ?>">
-                                    <input type="hidden" name="idCashflow" id="idCashflow" value="<?= $idCashflow ?>">
-                                    <input type="text" class="form-control" id="nama" name="nama" value="<?= $data['nama'] ?? '' ?>" autocomplete="off" placeholder="Cashflow Name">
-                                </div>
-                                <div class="col-md-6 d-flex flex-column">
-                                    <label for="cashflowname">Nominal</label>
-                                    <input type="number" class="form-control" id="nominal" name="nominal" autocomplete="off" placeholder="Cashflow Nominal" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['nominal'] ?? '' ?>">
-
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="col-md-6 d-flex flex-column">
-                                    <label for="cashflowname">Type</label>
-                                    <select class="form-control" id="jenis" name="jenis">
-                                        <option value="">Select Type</option>
-                                        <option value="kredit" <?= isset($data['jenis']) && $data['jenis'] === 'kredit' ? 'selected' : '' ?>>Kredit</option>
-                                        <option value="debet" <?= isset($data['jenis']) && $data['jenis'] === 'debet' ? 'selected' : '' ?>>Debet</option>
+                                    <label for="cashflowname">Origin Bank</label>
+                                    <select class="form-control" id="idBankAsal" name="idBankAsal">
+                                        <option value="">Select Bank</option>
+                                        <?php
+                                        foreach ($bank as $row) : ?>
+                                            <option value="<?= $row['idBank'] ?>" <?= isset($data['idBank']) && $row['idBank'] === $data['idBank'] ? 'selected' : '' ?>><?= $row['nama'] ?></option>
+                                        <?php endforeach; ?>
                                     </select>
 
                                 </div>
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="cashflowname">Bank</label>
-                                    <select class="form-control" id="idBank" name="idBank">
+                                    <label for="cashflowname">Destination Bank</label>
+                                    <select class="form-control" id="idBankTujuan" name="idBankTujuan">
                                         <option value="">Select Bank</option>
                                         <?php
                                         foreach ($bank as $row) : ?>
@@ -97,9 +76,22 @@ $bank = query("SELECT * FROM bank", []);
 
                                 </div>
                             </div>
+                            <div class="form-row">
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="bankname">Nominal</label>
+                                    <input type="number" class="form-control" id="nominal" name="nominal" autocomplete="off" placeholder="Transfer Nominal" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['nominal'] ?? '' ?>">
+
+                                </div>
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="keterangan">Description</label>
+                                    <input type="text" class="form-control" id="keterangan" name="keterangan" autocomplete="off" placeholder="Transfer Description">
+
+                                </div>
+                    
+                            </div>
                         </form>
 
-                        <button type="button" class="btn btn-<?= $flagCashflow === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesCashflow()"><i class="ri-save-3-line"></i>Simpan</button>
+                        <button type="button" class="btn btn-<?= $flagTransfer === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesTransfer()"><i class="ri-save-3-line"></i>Simpan</button>
                     </div>
                 </div>
             </div>
@@ -132,7 +124,7 @@ $bank = query("SELECT * FROM bank", []);
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
 
     <!-- MAIN JS -->
-    <script src="<?= BASE_URL_HTML ?>/system/data/cashflow/cashflow.js"></script>
+    <script src="<?= BASE_URL_HTML ?>/system/data/transfer/transfer.js"></script>
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
