@@ -3,13 +3,8 @@ session_start();
 require_once "../../../../library/konfigurasi.php";
 checkUserSession($db);
 
-$idBank = $_GET['data'] ?? '';
-if ($idBank) {
-    $data = query("SELECT * FROM bank WHERE idBank = ?", [$idBank])[0];
-    $flagBank = 'update';
-} else {
-    $flagBank = 'add';
-}
+$flagbank = 'transfer';
+$bank = query("SELECT * FROM bank", []);
 ?>
 
 <!doctype html>
@@ -56,21 +51,46 @@ if ($idBank) {
                     <div class="col-lg-12 bg-white p-2">
                         <form id="formBankInput">
                             <div class="form-row">
+                                <input type="hidden" name="flagBank" id="flagBank" value="<?= $flagbank ?>">
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="bankname">Bank Name</label>
-                                    <input type="hidden" name="flagBank" id="flagBank" value="<?= $flagBank ?>">
-                                    <input type="hidden" name="idBank" id="idBank" value="<?= $idBank ?>">
-                                    <input type="text" class="form-control" id="nama" name="nama" value="<?= $data['nama'] ?? '' ?>" autocomplete="off" placeholder="Bank Name">
+                                    <label for="cashflowname">Origin Bank</label>
+                                    <select class="form-control" id="idBankAsal" name="idBankAsal">
+                                        <option value="">Select Bank</option>
+                                        <?php
+                                        foreach ($bank as $row) : ?>
+                                            <option value="<?= $row['idBank'] ?>" <?= isset($data['idBank']) && $row['idBank'] === $data['idBank'] ? 'selected' : '' ?>><?= $row['nama'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+
                                 </div>
                                 <div class="col-md-6 d-flex flex-column">
-                                    <label for="bankname">Balance</label>
-                                    <input type="number" class="form-control" id="saldo" name="saldo" autocomplete="off" placeholder="Bank Balance" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['saldo'] ?? '' ?>">
-                                    
+                                    <label for="cashflowname">Destination Bank</label>
+                                    <select class="form-control" id="idBankTujuan" name="idBankTujuan">
+                                        <option value="">Select Bank</option>
+                                        <?php
+                                        foreach ($bank as $row) : ?>
+                                            <option value="<?= $row['idBank'] ?>" <?= isset($data['idBank']) && $row['idBank'] === $data['idBank'] ? 'selected' : '' ?>><?= $row['nama'] ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+
                                 </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="bankname">Nominal</label>
+                                    <input type="number" class="form-control" id="nominal" name="nominal" autocomplete="off" placeholder="Transfer Nominal" min="0" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" style="appearance: textfield;" value="<?= $data['nominal'] ?? '' ?>">
+
+                                </div>
+                                <div class="col-md-6 d-flex flex-column">
+                                    <label for="keterangan">Description</label>
+                                    <input type="text" class="form-control" id="keterangan" name="keterangan" autocomplete="off" placeholder="Transfer Description">
+
+                                </div>
+                    
                             </div>
                         </form>
 
-                        <button type="button" class="btn btn-<?= $flagBank === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesBank()"><i class="ri-save-3-line"></i>Simpan</button>
+                        <button type="button" class="btn btn-<?= $flagbank === 'add' ? 'update' : 'info' ?> btn-primary m-1 mt-3" onclick="prosesBank()"><i class="ri-save-3-line"></i>Simpan</button>
                     </div>
                 </div>
             </div>
@@ -105,8 +125,8 @@ if ($idBank) {
     <!-- MAIN JS -->
     <script src="<?= BASE_URL_HTML ?>/system/data/bank/bank.js"></script>
 
-        <!-- Toastr JS -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </body>
 
 </html>
