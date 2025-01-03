@@ -13,6 +13,22 @@ document.addEventListener("DOMContentLoaded", function (event) {
   daftarCashflow();
 });
 
+$(function () {
+  $('input[name="rentang"]').daterangepicker({
+    opens: "left",
+  });
+  $("#rentang").on("apply.daterangepicker", function (event, picker) {
+    $(this).val(
+      picker.startDate.format("YYYY-MM-DD") +
+        " - " +
+        picker.endDate.format("YYYY-MM-DD")
+    );
+
+    cariDaftarCashflow();
+  });
+
+});
+
 function daftarCashflow() {
   $.ajax({
     url: "daftarCashflow.php",
@@ -113,15 +129,17 @@ function prosesCashflow() {
 
 function cariDaftarCashflow() {
   const searchQuery = $("#searchQuery").val();
+  const rentang = $("#rentang").val();
   console.log(searchQuery);
   const limit = $("#limit").val();
-  if (searchQuery || limit) {
+  if (searchQuery || limit || rentang) {
     $.ajax({
       url: "daftarCashflow.php",
       type: "post",
       data: {
         searchQuery: searchQuery,
         limit: limit,
+        rentang: rentang,
         flagCashflow: "cari",
       },
       beforeSend: function () {},

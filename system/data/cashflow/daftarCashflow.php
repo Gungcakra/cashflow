@@ -9,6 +9,7 @@ checkUserSession($db);
 
 $flagCashflow = isset($_POST['flagCashflow']) ? $_POST['flagCashflow'] : '';
 $searchQuery = isset($_POST['searchQuery']) ? $_POST['searchQuery'] : '';
+$rentang = isset($_POST['rentang']) ? $_POST['rentang'] : '';
 $limit = isset($_POST['limit']) ? $_POST['limit'] : 10;
 $page = isset($_POST['page']) ? $_POST['page'] : 1;
 $offset = ($page - 1) * $limit;
@@ -16,8 +17,18 @@ $conditions = '';
 $params = [];
 
 if ($flagCashflow === 'cari') {
+    $rangeDate = explode(" - ", $rentang);
+    $startDate = date("Y-m-d", strtotime($rangeDate[0]));
+    $endDate = date("Y-m-d", strtotime($rangeDate[1]));
+
+    if(!empty($rangeDate)){
+        $searchQuery = '';
+        $conditions .= " WHERE cashflow.tanggal BETWEEN ? AND ?";
+        $params[] = $startDate;
+        $params[] = $endDate;
+    }
     if (!empty($searchQuery)) {
-        $roleId = '';
+        $rangeDate = '';
         $conditions .= " WHERE cashflow.nama LIKE ?";
         $params[] = "%$searchQuery%";
     }

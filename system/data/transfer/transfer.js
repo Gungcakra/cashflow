@@ -12,6 +12,21 @@
 document.addEventListener("DOMContentLoaded", function (event) {
   daftarTransfer();
 });
+$(function () {
+  $('input[name="rentang"]').daterangepicker({
+    opens: "left",
+  });
+  $("#rentang").on("apply.daterangepicker", function (event, picker) {
+    $(this).val(
+      picker.startDate.format("YYYY-MM-DD") +
+        " - " +
+        picker.endDate.format("YYYY-MM-DD")
+    );
+
+    cariDaftarTransfer();
+  });
+
+});
 
 function daftarTransfer() {
   $.ajax({
@@ -112,14 +127,15 @@ function prosesTransfer() {
 
 function cariDaftarTransfer() {
   const searchQuery = $("#searchQuery").val();
-  console.log(searchQuery);
+  const rentang = $("#rentang").val();
   const limit = $("#limit").val();
-  if (searchQuery || limit) {
+  if (searchQuery || limit || rentang) {
     $.ajax({
       url: "daftarTransfer.php",
       type: "post",
       data: {
         searchQuery: searchQuery,
+        rentang: rentang,
         limit: limit,
         flagTransfer: "cari",
       },

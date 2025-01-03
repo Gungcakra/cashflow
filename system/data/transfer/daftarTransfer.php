@@ -9,6 +9,7 @@ checkUserSession($db);
 
 $flagTransfer = isset($_POST['flagTransfer']) ? $_POST['flagTransfer'] : '';
 $searchQuery = isset($_POST['searchQuery']) ? $_POST['searchQuery'] : '';
+$rentang = isset($_POST['rentang']) ? $_POST['rentang'] : '';
 $roleId = isset($_POST['roleId']) ? $_POST['roleId'] : '';
 $limit = isset($_POST['limit']) ? $_POST['limit'] : 10;
 $page = isset($_POST['page']) ? $_POST['page'] : 1;
@@ -16,15 +17,21 @@ $offset = ($page - 1) * $limit;
 $conditions = '';
 $params = [];
 
+
 if ($flagTransfer === 'cari') {
 
-    // if (!empty($roleId)) {
-    //   $searchQuery = '';
-    //   $conditions .= " WHERE employees.roleId = ?";
-    //   $params[] = $roleId;
-    // }
+    $rangeDate = explode(" - ", $rentang);
+    $startDate = date("Y-m-d", strtotime($rangeDate[0]));
+    $endDate = date("Y-m-d", strtotime($rangeDate[1]));
+
+    if (!empty($rangeDate)) {
+        $searchQuery = '';
+        $conditions .= " WHERE transfer.tanggal BETWEEN ? AND ?";
+        $params[] = $startDate;
+        $params[] = $endDate;
+    }
     if (!empty($searchQuery)) {
-        $roleId = '';
+        $rangeDate = '';
         $conditions .= " WHERE nama LIKE ?";
         $params[] = "%$searchQuery%";
     }

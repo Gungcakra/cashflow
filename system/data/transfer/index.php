@@ -29,6 +29,9 @@ checkUserSession($db);
 
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <!-- Date Range -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 </head>
 
 <body class="  ">
@@ -64,12 +67,18 @@ checkUserSession($db);
                                             <div id="user_list_datatable_info" class="dataTables_filter">
 
                                                 <form class="mr-3 position-relative d-flex ">
-                                                    <div class="col-md-6 m-0 p-0">
+                                                    <div class="col-md-4 m-0 p-0">
                                                         <input type="text" class="form-control" id="searchQuery" placeholder="Search"
                                                             name="searchQuery"
                                                             autocomplete="off"
                                                             onkeyup="cariDaftarTransfer()"
                                                             aria-controls="user-list-table">
+                                                    </div>
+                                                    <div class="input-group col-md-6">
+                                                        <input type="text" class="form-control bg-white" name="rentang" id="rentang">
+                                                        <div class="input-group-prepend bg-white">
+                                                            <span class="input-group-text bg-white" id="basic-addon4"><i class="las la-calendar"></i> </span>
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-2 m-0 p-0 ml-2">
                                                         <select class="custom-select" id="limit" name="limit" onclick="cariDaftarTransfer()">
@@ -148,6 +157,9 @@ checkUserSession($db);
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <!-- Date Range -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 </body>
 
 </html>
