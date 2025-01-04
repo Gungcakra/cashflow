@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once "../../../library/konfigurasi.php";
-require_once "{$constant('BASE_URL_PHP')}/library/fungsiTanggal.php";
-require_once "{$constant('BASE_URL_PHP')}/library/fungsiRupiah.php";
+require_once "../../../library/config.php";
+require_once "{$constant('BASE_URL_PHP')}/library/dateFunction.php";
+require_once "{$constant('BASE_URL_PHP')}/library/currencyFunction.php";
 
 //CEK USER
 checkUserSession($db);

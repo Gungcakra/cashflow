@@ -1,7 +1,7 @@
 
 
 <?php
-require_once "./library/konfigurasi.php";
+require_once "./library/config.php";
 session_start();
 
 // Batasi percobaan login

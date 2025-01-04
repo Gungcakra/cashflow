@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "../../../../library/konfigurasi.php";
+require_once "../../../../library/config.php";
 
 checkUserSession($db);
 

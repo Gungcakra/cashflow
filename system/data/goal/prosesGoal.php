@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . "/../../../library/konfigurasi.php";
+require_once __DIR__ . "/../../../library/config.php";
 
 //CEK USER
 checkUserSession($db);

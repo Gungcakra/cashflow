@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . "/../../../library/konfigurasi.php";
+require_once __DIR__ . "/../../../library/config.php";
 
 //CEK USER
 checkUserSession($db);
@@ -77,7 +77,7 @@ function updateUser($db) {
     }
 }
 
-// Determine which function to call based on the flagUser value
+
 if (isset($_POST['flagUser'])) {
     switch ($_POST['flagUser']) {
         case 'add':
