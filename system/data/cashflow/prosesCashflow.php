@@ -1,13 +1,12 @@
 <?php
 session_start();
-require_once "../../../library/konfigurasi.php";
+require_once __DIR__ . "/../../../library/konfigurasi.php";
 
 
 //CEK USER
 checkUserSession($db);
 
-// Check if the flagCashflow is set
-if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
+function addCashflow($db) {
     $nama = $_POST['nama'];
     $nominal = $_POST['nominal'];
     $jenis = $_POST['jenis'];
@@ -22,7 +21,6 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
     }
     
     $query = "INSERT INTO cashflow (idBank, nama, nominal, jenis) VALUES (?, ?, ?, ?)";
-
     $result = query($query, [$idBank, $nama, $nominal, $jenis]);
 
     if ($result > 0) {
@@ -39,7 +37,9 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
             "pesan" => "Failed to add Cashflow."
         ]);
     }
-} else if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'delete') {
+}
+
+function deleteCashflow($db) {
     $idCashflow = $_POST['idCashflow'];
     $data = query("SELECT * FROM cashflow WHERE idCashflow = ?", [$idCashflow])[0];
     $dataBank = query("SELECT * FROM bank WHERE idBank = ?", [$data['idBank']])[0];
@@ -53,7 +53,6 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
     $query = "UPDATE bank SET saldo = ? WHERE idBank = ?";
     $result = query($query, [$updateSaldo, $data['idBank']]);
 
-    
     if ($result > 0) {
         $query = "DELETE FROM cashflow WHERE idCashflow = ?";
         $result = query($query, [$idCashflow]);
@@ -67,7 +66,9 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
             "pesan" => "Failed to delete Cashflow: " . mysqli_error($db)
         ]);
     }
-} else if ($_POST['flagCashflow'] && $_POST['flagCashflow'] === 'update') {
+}
+
+function updateCashflow($db) {
     $idCashflow = $_POST['idCashflow'];
 
     $nama = $_POST['nama'];
@@ -109,3 +110,15 @@ if (isset($_POST['flagCashflow']) && $_POST['flagCashflow'] === 'add') {
         ]);
     }
 }
+
+// Check the flagCashflow and call the appropriate function
+if (isset($_POST['flagCashflow'])) {
+    if ($_POST['flagCashflow'] === 'add') {
+        addCashflow($db);
+    } else if ($_POST['flagCashflow'] === 'delete') {
+        deleteCashflow($db);
+    } else if ($_POST['flagCashflow'] === 'update') {
+        updateCashflow($db);
+    }
+}
+?>

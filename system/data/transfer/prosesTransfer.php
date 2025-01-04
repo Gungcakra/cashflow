@@ -1,30 +1,42 @@
 <?php
 session_start();
-require_once "../../../library/konfigurasi.php";
+require_once __DIR__ . "/../../../library/konfigurasi.php";
 
-
-//CEK USER
 checkUserSession($db);
 
-if ($_POST['flagTransfer'] && $_POST['flagTransfer'] === 'transfer'){
+function getBankSaldo($idBank) {
+    return query("SELECT saldo FROM bank WHERE idBank = ?", [$idBank])[0]['saldo'];
+}
+
+function updateBankSaldo($idBank, $saldo) {
+    return query("UPDATE bank SET saldo = ? WHERE idBank = ?", [$saldo, $idBank]);
+}
+
+function insertTransfer($idBankAsal, $idBankTujuan, $nominal, $keterangan) {
+    $query = "INSERT INTO transfer (idBankAsal, idBankTujuan, nominal, keterangan) VALUES (?, ?, ?, ?)";
+    return query($query, [$idBankAsal, $idBankTujuan, $nominal, $keterangan]);
+}
+
+function processTransfer($db) {
+    
+
+    if ($_POST['flagTransfer'] && $_POST['flagTransfer'] === 'transfer') {
         $idBankAsal = $_POST['idBankAsal'];
         $idBankTujuan = $_POST['idBankTujuan'];
         $nominal = $_POST['nominal'];
         $keterangan = $_POST['keterangan'];
-        
-        $saldoBankAsal = query("SELECT saldo FROM bank WHERE idBank = ?", [$idBankAsal])[0]['saldo'];
-        $saldoBankTujuan = query("SELECT saldo FROM bank WHERE idBank = ?", [$idBankTujuan])[0]['saldo'];
-        
+
+        $saldoBankAsal = getBankSaldo($idBankAsal);
+        $saldoBankTujuan = getBankSaldo($idBankTujuan);
+
         $updateSaldoBankAsal = $saldoBankAsal - $nominal;
         $updateSaldoBankTujuan = $saldoBankTujuan + $nominal;
 
-        $query = "INSERT INTO transfer (idBankAsal, idBankTujuan, nominal, keterangan) VALUES (?, ?, ?, ?)";
-
-        $result = query($query, [$idBankAsal, $idBankTujuan, $nominal, $keterangan]);
+        $result = insertTransfer($idBankAsal, $idBankTujuan, $nominal, $keterangan);
 
         if ($result > 0) {
-            $updateBankAsal = query("UPDATE bank SET saldo = ? WHERE idBank = ?", [$updateSaldoBankAsal, $idBankAsal]);
-            $updateBankTujuan = query("UPDATE bank SET saldo = ? WHERE idBank = ?", [$updateSaldoBankTujuan, $idBankTujuan]);
+            updateBankSaldo($idBankAsal, $updateSaldoBankAsal);
+            updateBankSaldo($idBankTujuan, $updateSaldoBankTujuan);
             echo json_encode([
                 "status" => true,
                 "pesan" => "Transfer successfully!"
@@ -35,4 +47,7 @@ if ($_POST['flagTransfer'] && $_POST['flagTransfer'] === 'transfer'){
                 "pesan" => "Failed Transfer."
             ]);
         }
+    }
 }
+
+processTransfer($db);

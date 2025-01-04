@@ -1,19 +1,16 @@
 <?php
 session_start();
-require_once "../../../library/konfigurasi.php";
-
+require_once __DIR__ . "/../../../library/konfigurasi.php";
 
 //CEK USER
 checkUserSession($db);
 
-// Check if the flagUser is set
-if (isset($_POST['flagUser']) && $_POST['flagUser'] === 'add') {
+function addUser($db) {
     $username = $_POST['username'];
     $password = $_POST['password'];
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     $query = "INSERT INTO user (username, password) VALUES (?, ?)";
-
     $result = query($query, [$username, $hashedPassword]);
 
     if ($result > 0) {
@@ -27,7 +24,9 @@ if (isset($_POST['flagUser']) && $_POST['flagUser'] === 'add') {
             "pesan" => "Failed to add User."
         ]);
     }
-} else if (isset($_POST['flagUser']) && $_POST['flagUser'] === 'delete') {
+}
+
+function deleteUser($db) {
     $userId = $_POST['userId'];
 
     $query = "DELETE FROM user WHERE userId = ?";
@@ -44,7 +43,9 @@ if (isset($_POST['flagUser']) && $_POST['flagUser'] === 'add') {
             "pesan" => "Failed to delete User: " . mysqli_error($db)
         ]);
     }
-} else if ($_POST['flagUser'] && $_POST['flagUser'] === 'update') {
+}
+
+function updateUser($db) {
     $userId = $_POST['idUser'];
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -52,17 +53,16 @@ if (isset($_POST['flagUser']) && $_POST['flagUser'] === 'add') {
 
     if ($password) {
         $query = "UPDATE user 
-              SET username = ?, 
-                  password = ?
-              WHERE userId = ?";
+                  SET username = ?, 
+                      password = ?
+                  WHERE userId = ?";
         $result = query($query, [$username, $hashedPassword, $userId]);
     } else {
         $query = "UPDATE user 
-              SET username = ?
-              WHERE userId = ?";
+                  SET username = ?
+                  WHERE userId = ?";
         $result = query($query, [$username, $userId]);
     }
-
 
     if ($result) {
         echo json_encode([
@@ -76,3 +76,30 @@ if (isset($_POST['flagUser']) && $_POST['flagUser'] === 'add') {
         ]);
     }
 }
+
+// Determine which function to call based on the flagUser value
+if (isset($_POST['flagUser'])) {
+    switch ($_POST['flagUser']) {
+        case 'add':
+            addUser($db);
+            break;
+        case 'delete':
+            deleteUser($db);
+            break;
+        case 'update':
+            updateUser($db);
+            break;
+        default:
+            echo json_encode([
+                "status" => false,
+                "pesan" => "Invalid flagUser value."
+            ]);
+            break;
+    }
+} else {
+    echo json_encode([
+        "status" => false,
+        "pesan" => "flagUser is not set."
+    ]);
+}
+?>
