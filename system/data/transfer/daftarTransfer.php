@@ -45,6 +45,7 @@ $totalRecords = $totalResult[0]['total'];
 $totalPages = ceil($totalRecords / $limit);
 
 $query = "SELECT transfer.*,
+                 transfer.idTransfer,
                  bankAsal.nama AS namaBankAsal,
                  bankTujuan.nama AS namaBankTujuan
           FROM transfer 
@@ -88,9 +89,9 @@ $transfer = query($query, $params);
                         <!-- <a class="dropdown-item" href="#" data-toggle="tooltip" data-placement="top" title="Add">
                             <i class="ri-bank-add-line mr-0"></i> Add
                         </a> -->
-                        <a class="dropdown-item" href="form/?data=<?= $row['idTransfer'] ?>" data-toggle="tooltip" data-placement="top" title="Edit">
+                        <!-- <a class="dropdown-item" href="form/?data=<?= $row['idTransfer'] ?>" data-toggle="tooltip" data-placement="top" title="Edit">
                             <i class="ri-pencil-line mr-0"></i> Edit
-                        </a>
+                        </a> -->
                         <a class="dropdown-item" href="#" data-toggle="tooltip" data-placement="top" title="Delete" onclick="deleteTransfer(<?= $row['idTransfer'] ?>)">
                             <i class="ri-delete-bin-line mr-0"></i> Delete
                         </a>
