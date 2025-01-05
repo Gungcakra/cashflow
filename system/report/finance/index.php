@@ -29,6 +29,9 @@ checkUserSession($db);
 
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <!-- Date Range -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 </head>
 
 <body class="  ">
@@ -54,32 +57,38 @@ checkUserSession($db);
                         <div class="card">
                             <div class="card-header d-flex justify-content-between">
                                 <div class="header-title">
-                                    <h4 class="card-title">Cashflow List</h4>
+                                    <h4 class="card-title">Finance Report</h4>
                                 </div>
                             </div>
                             <div class="card-body">
-                            <div class="table-responsive">
+                                <div class="table-responsive">
                                     <div class="row justify-content-between">
                                         <div class="col-sm-6 col-md-6">
                                             <div id="user_list_datatable_info" class="dataTables_filter">
 
                                                 <form class="mr-3 position-relative d-flex ">
-                                                    <div class="col-md-6 m-0 p-0">
+                                                    <!-- <div class="col-md-4 m-0 p-0">
                                                         <input type="text" class="form-control" id="searchQuery" placeholder="Search"
                                                             name="searchQuery"
                                                             autocomplete="off"
-                                                            onkeyup="cariDaftarCashflow()"
+                                                            onkeyup="cariDaftarFinance()"
                                                             aria-controls="user-list-table">
+                                                    </div> -->
+                                                    <div class="input-group col-md-6">
+                                                        <input type="text" class="form-control bg-white" name="rentang" id="rentang">
+                                                        <div class="input-group-prepend bg-white">
+                                                            <span class="input-group-text bg-white" id="basic-addon4"><i class="las la-calendar"></i> </span>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-2 m-0 p-0 ml-2">
-                                                            <select class="custom-select" id="limit" name="limit" onclick="cariDaftarCashflow()">
-                                                                <option value="10">10</option>
-                                                                <option value="20">20</option>
-                                                                <option value="50">50</option>
-                                                                <option value="100">100</option>
-                                                            </select>
-                                                        
-                                                    </div>
+                                                    <!-- <div class="col-md-2 m-0 p-0 ml-2">
+                                                        <select class="custom-select" id="limit" name="limit" onclick="cariDaftarFinance()">
+                                                            <option value="10">10</option>
+                                                            <option value="20">20</option>
+                                                            <option value="50">50</option>
+                                                            <option value="100">100</option>
+                                                        </select>
+
+                                                    </div> -->
                                                 </form>
                                             </div>
                                         </div>
@@ -91,12 +100,12 @@ checkUserSession($db);
                                                 <button class="btn btn-primary mr-1" href="javascript:void();">
                                                     Excel
                                                 </button> -->
-                                                <a class="btn btn-primary mr-1" href="./form/">+ Cashflow</a>
+                                                <a class="btn btn-danger text-white mr-1" onclick="generateReport()"><i class="las la-file-pdf"></i>Generate Report</a>
 
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="daftarCashflow" class="w-100">
+                                    <div id="daftarFinance" class="w-100">
 
                                     </div>
                                 </div>
@@ -140,10 +149,13 @@ checkUserSession($db);
     <script src="<?= BASE_URL_HTML ?>/assets/vendor/moment.min.js"></script>
     <!-- MAIN JS -->
 
-    <script src="<?= BASE_URL_HTML ?>/system/data/cashflow/cashflow.js"></script>
+    <script src="<?= BASE_URL_HTML ?>/system/report/finance/finance.js"></script>
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Date Range -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 </body>
 
 </html>
