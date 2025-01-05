@@ -1,2 +1,2 @@
 # Ignore konfigurasi.php in the library directory
-/library/config.php
+/library/databaseConfig.php
