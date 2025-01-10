@@ -17,37 +17,44 @@ $conditions = '';
 $params = [];
 
 if ($flagCashflow === 'cari') {
-    $rangeDate = explode(" - ", $rentang);
-    $startDate = date("Y-m-d", strtotime($rangeDate[0]));
-    $endDate = date("Y-m-d", strtotime($rangeDate[1]));
-
-    if(!empty($rangeDate)){
-        $searchQuery = '';
-        $conditions .= " WHERE cashflow.tanggal BETWEEN ? AND ?";
+    $rangeDate = !empty($rentang) ? explode(" - ", $rentang) : null;
+    if ($rangeDate) {
+        $startDate = date("Y-m-d", strtotime($rangeDate[0]));
+        $endDate = date("Y-m-d", strtotime($rangeDate[1]));
+        $conditions .= empty($conditions) ? " WHERE" : " AND";
+        $conditions .= " cashflow.tanggal BETWEEN ? AND ?";
         $params[] = $startDate;
         $params[] = $endDate;
     }
+
     if (!empty($searchQuery)) {
-        $rangeDate = '';
-        $conditions .= " WHERE cashflow.nama LIKE ?";
+        $conditions .= empty($conditions) ? " WHERE" : " AND";
+        $conditions .= " cashflow.nama LIKE ?";
         $params[] = "%$searchQuery%";
     }
 }
 
-$totalQuery = "SELECT COUNT(*) as total FROM cashflow INNER JOIN bank ON cashflow.idBank = bank.idBank {$conditions}";
+
+$totalQuery = "SELECT COUNT(*) as total FROM cashflow 
+               INNER JOIN bank ON cashflow.idBank = bank.idBank 
+               {$conditions}";
+
 $totalResult = query($totalQuery, $params);
 $totalRecords = $totalResult[0]['total'];
 $totalPages = ceil($totalRecords / $limit);
 
 $query = "SELECT cashflow.*, 
-          bank.idBank,
-          bank.nama as bank
+          bank.idBank, 
+          bank.nama as bank 
           FROM cashflow 
-          INNER JOIN bank 
-          ON cashflow.idBank = bank.idBank " . $conditions . " ORDER BY cashflow.tanggal ASC LIMIT ? OFFSET ?";
+          INNER JOIN bank ON cashflow.idBank = bank.idBank 
+          {$conditions} 
+          ORDER BY cashflow.tanggal ASC 
+          LIMIT ? OFFSET ?";
 
-$params[] = $limit;
-$params[] = $offset;
+
+$params[] = (int)$limit;
+$params[] = (int)$offset;
 $cashflow = query($query, $params);
 ?>
 
