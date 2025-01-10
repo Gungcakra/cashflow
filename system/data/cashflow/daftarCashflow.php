@@ -7,11 +7,11 @@ require_once "{$constant('BASE_URL_PHP')}/library/currencyFunction.php";
 //CEK USER
 checkUserSession($db);
 
-$flagCashflow = isset($_POST['flagCashflow']) ? $_POST['flagCashflow'] : '';
-$searchQuery = isset($_POST['searchQuery']) ? $_POST['searchQuery'] : '';
-$rentang = isset($_POST['rentang']) ? $_POST['rentang'] : '';
-$limit = isset($_POST['limit']) ? $_POST['limit'] : 10;
-$page = isset($_POST['page']) ? $_POST['page'] : 1;
+$flagCashflow = $_POST['flagCashflow'] ?? '';
+$searchQuery = $_POST['searchQuery'] ?? '';
+$rentang = $_POST['rentang'] ?? '';
+$limit = $_POST['limit'] ?? 10;
+$page = $_POST['page'] ?? 1;
 $offset = ($page - 1) * $limit;
 $conditions = '';
 $params = [];
@@ -34,7 +34,7 @@ if ($flagCashflow === 'cari') {
     }
 }
 
-$totalQuery = "SELECT COUNT(*) as total FROM cashflow INNER JOIN bank ON cashflow.idBank = bank.idBank " . $conditions;
+$totalQuery = "SELECT COUNT(*) as total FROM cashflow INNER JOIN bank ON cashflow.idBank = bank.idBank {$conditions}";
 $totalResult = query($totalQuery, $params);
 $totalRecords = $totalResult[0]['total'];
 $totalPages = ceil($totalRecords / $limit);
